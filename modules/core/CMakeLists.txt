@@ -6,7 +6,7 @@ ocv_add_dispatched_file(stat SSE4_2 AVX2)
 ocv_add_module(core
                "${OPENCV_HAL_LINKER_LIBS}"
                OPTIONAL opencv_cudev
-               WRAP java python)
+               WRAP java python js)
 
 set(extra_libs "")
 
