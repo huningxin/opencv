@@ -2,7 +2,7 @@ set(the_description "The Core Functionality")
 ocv_add_module(core
                "${OPENCV_HAL_LINKER_LIBS}"
                OPTIONAL opencv_cudev
-               WRAP java python)
+               WRAP java python js)
 
 set(extra_libs "")
 

@@ -1,5 +1,5 @@
 set(the_description "Image codecs")
-ocv_add_module(imgcodecs opencv_imgproc WRAP java python)
+ocv_add_module(imgcodecs opencv_imgproc WRAP java python js)
 
 # ----------------------------------------------------------------------------
 #  CMake file for imgcodecs. See root CMakeLists.txt
