@@ -134,11 +134,15 @@ if(BUILD_DOCS AND DOXYGEN_FOUND)
   set(faqfile "${CMAKE_CURRENT_SOURCE_DIR}/faq.markdown")
   set(tutorial_path "${CMAKE_CURRENT_SOURCE_DIR}/tutorials")
   set(tutorial_py_path "${CMAKE_CURRENT_SOURCE_DIR}/py_tutorials")
+    # js_part
+  set(tutorial_js_path "${CMAKE_CURRENT_SOURCE_DIR}/js_tutorials")
   set(example_path "${CMAKE_SOURCE_DIR}/samples")
 
   # set export variables
-  string(REPLACE ";" " \\\n" CMAKE_DOXYGEN_INPUT_LIST "${rootfile} ; ${faqfile} ; ${paths_include} ; ${paths_hal_interface} ; ${paths_doc} ; ${tutorial_path} ; ${tutorial_py_path} ; ${paths_tutorial} ; ${tutorial_contrib_root}")
-  string(REPLACE ";" " \\\n" CMAKE_DOXYGEN_IMAGE_PATH "${paths_doc} ; ${tutorial_path} ; ${tutorial_py_path} ; ${paths_tutorial}")
+    #js_part
+  string(REPLACE ";" " \\\n" CMAKE_DOXYGEN_INPUT_LIST "${rootfile} ; ${faqfile} ; ${paths_include} ; ${paths_hal_interface} ; ${paths_doc} ; ${tutorial_path} ; ${tutorial_py_path} ; ${tutorial_js_path} ; ${paths_tutorial} ; ${tutorial_contrib_root}")
+    #js_part
+  string(REPLACE ";" " \\\n" CMAKE_DOXYGEN_IMAGE_PATH "${paths_doc} ; ${tutorial_path} ; ${tutorial_py_path} ; ${tutorial_js_path} ; ${paths_tutorial}")
   # TODO: remove paths_doc from EXAMPLE_PATH after face module tutorials/samples moved to separate folders
   string(REPLACE ";" " \\\n" CMAKE_DOXYGEN_EXAMPLE_PATH  "${example_path} ; ${paths_doc} ; ${paths_sample}")
   set(CMAKE_DOXYGEN_LAYOUT "${CMAKE_CURRENT_SOURCE_DIR}/DoxygenLayout.xml")
