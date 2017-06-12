@@ -1,0 +1,24 @@
+{
+  "name": "bin",
+  "description": "Tests for opencv js bindings",
+  "version": "1.0.0",
+  "dependencies" : { 
+    "qunit" : "latest"
+  },
+  "main": "opencv.js",
+  "scripts": {
+    "test": "node tests.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/huningxin/opencv.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "BSD-4-Clause",
+  "bugs": {
+    "url": "https://github.com/huningxin/opencv/issues"
+  },
+  "homepage": "https://github.com/huningxin/opencv"
+}
+
