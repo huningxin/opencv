@@ -411,11 +411,28 @@ class CppHeaderParser(object):
             func_modlist.append("="+arg)
             decl_str = decl_str[:npos] + decl_str[npos3+1:]
 
-        # filter off some common prefixes, which are meaningless for Python wrappers.
-        # note that we do not strip "static" prefix, which does matter;
-        # it means class methods, not instance methods
-        decl_str = self.batch_replace(decl_str, [("virtual", ""), ("static inline", ""), ("inline", ""),\
-            ("CV_EXPORTS_W", ""), ("CV_EXPORTS", ""), ("CV_CDECL", ""), ("CV_WRAP ", " "), ("CV_INLINE", "")]).strip()
+        virtual_method = False
+        pure_virtual_method = False
+        if not self._js:
+            # filter off some common prefixes, which are meaningless for Python wrappers.
+            # note that we do not strip "static" prefix, which does matter;
+            # it means class methods, not instance methods
+            decl_str = self.batch_replace(decl_str, [("virtual", ""), ("static inline", ""), ("inline", ""),\
+                ("CV_EXPORTS_W", ""), ("CV_EXPORTS", ""), ("CV_CDECL", ""), ("CV_WRAP ", " "), ("CV_INLINE", "")]).strip()
+        else:
+            # "virtual" prefix matters for JS wrappers.
+            decl_str = self.batch_replace(decl_str, [("static inline", ""), ("inline", ""),\
+                ("CV_EXPORTS_W", ""), ("CV_EXPORTS", ""), ("CV_CDECL", ""), ("CV_WRAP ", " "), ("CV_INLINE", "")]).strip()
+
+
+            if decl_str.strip().startswith('virtual'):
+                virtual_method = True
+
+            decl_str = decl_str.replace('virtual' , '')
+
+            end_tokens = decl_str[decl_str.rfind(')'):].split()
+            const_method = 'const' in end_tokens
+            pure_virtual_method = '=' in end_tokens and '0' in end_tokens
 
         static_method = False
         context = top[0]
@@ -579,6 +596,12 @@ class CppHeaderParser(object):
 
         if static_method:
             func_modlist.append("/S")
+        if const_method:
+            func_modlist.append("/C")
+        if virtual_method:
+            func_modlist.append("/V")
+        if pure_virtual_method:
+            func_modlist.append("/PV")
 
         if original_type is None:
             return [funcname, rettype, func_modlist, args]
