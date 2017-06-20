@@ -31,8 +31,9 @@ where the list of modifiers is yet another nested list of strings
 
 class CppHeaderParser(object):
 
-    def __init__(self, generate_umat_decls=False):
+    def __init__(self, generate_umat_decls=False, js=False):
         self._generate_umat_decls = generate_umat_decls
+        self._js = js
 
         self.BLOCK_TYPE = 0
         self.BLOCK_NAME = 1
@@ -226,7 +227,10 @@ class CppHeaderParser(object):
             else:
                 prev_val_delta = 0
                 prev_val = val = pv[1].strip()
-            decl.append(["const " + self.get_dotted_name(pv[0].strip()), val, [], []])
+            if not self._js:
+                decl.append(["const " + self.get_dotted_name(pv[0].strip()), val, [], []])
+            else:
+                decl.append([self.get_dotted_name(pv[0].strip()), val, [], []])
         return decl
 
     def parse_class_decl(self, decl_str):
@@ -843,8 +847,11 @@ class CppHeaderParser(object):
                     stmt_type, name, parse_flag, decl = self.parse_stmt(stmt, token)
                     if decl:
                         if stmt_type == "enum":
-                            for d in decl:
-                                decls.append(d)
+                            if self._js:
+                                decls.append(['enum' , name , [],  decl ])
+                            else:
+                                for d in decl:
+                                    decls.append(d)
                         else:
                             decls.append(decl)
 

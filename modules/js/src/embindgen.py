@@ -226,7 +226,7 @@ class JSWrapperGenerator(object):
         self.namespaces = {}
         self.enums = {}
 
-        self.parser = hdr_parser.CppHeaderParser()
+        self.parser = hdr_parser.CppHeaderParser(js=True)
         self.class_idx = 0
 
     def add_class(self, stype, name, decl):
