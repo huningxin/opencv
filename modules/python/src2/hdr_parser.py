@@ -709,7 +709,14 @@ class CppHeaderParser(object):
                     return stmt_type, classname, True, decl
 
             if stmt.startswith("enum"):
-                return "enum", "", True, None
+                if not self._js:
+                    return "enum", "", True, None
+                else:
+                    items = stmt.split()
+                    if len (items) == 1 :
+                        return "enum", '' , True, None
+                    elif len (items) == 2 :
+                        return "enum", items[1] , True, None
 
             if stmt.startswith("namespace"):
                 stmt_list = stmt.split()
@@ -721,7 +728,13 @@ class CppHeaderParser(object):
 
         if end_token == "}" and context == "enum":
             decl = self.parse_enum(stmt)
-            return "enum", "", False, decl
+            if not self._js:
+                return "enum", "", False, decl
+            else:
+                name = self.get_dotted_name(stack_top[1]).strip()
+                if stack_top[1].strip() == '':
+                    name += '.anonymous'
+                return "enum", name , False, decl
 
         if end_token == ";" and stmt.startswith("typedef"):
             # TODO: handle typedef's more intelligently
@@ -873,6 +886,7 @@ class CppHeaderParser(object):
                     if decl:
                         if stmt_type == "enum":
                             if self._js:
+                                #TODO anonymous enums
                                 decls.append(['enum' , name , [],  decl ])
                             else:
                                 for d in decl:
