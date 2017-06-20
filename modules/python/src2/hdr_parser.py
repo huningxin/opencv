@@ -206,6 +206,8 @@ class CppHeaderParser(object):
 
         arg_type = self.batch_replace(arg_type, [("std::", ""), ("cv::", ""), ("::", "_")])
 
+        if arg_name in arg_str and self._js:
+            arg_type = arg_str.strip()[:-1*len(arg_name)]
         return arg_type, arg_name, modlist, argno
 
     def parse_enum(self, decl_str):
@@ -542,7 +544,7 @@ class CppHeaderParser(object):
                     if eqpos >= 0:
                         a = a[:eqpos].strip()
                     arg_type, arg_name, modlist, argno = self.parse_arg(a, argno)
-                    if self.wrap_mode:
+                    if self.wrap_mode and not self._js:
                         mat = "UMat" if use_umat else "Mat"
 
                         # TODO: Vectors should contain UMat, but this is not very easy to support and not very needed
