@@ -54,30 +54,75 @@ canvas.height = imgData.height;
 ctx.putImageData(imgData, 0, 0);
 @endcode
 
-In addition, OpenCV-JavaScript implements imread and imshow using the above method. You can use imread and 
-imshow to read image from html canvas and display it.
+In addition, OpenCV-JavaScript implements image read and show using the above method. You can use cv.imread and 
+cv.imshow to read image from html canvas and display it.
 @code{.js}
-var img = imread("canvas1");
-imshow("canvas2", img);
+var img = cv.imread("canvas1");
+cv.imshow("canvas2", img);
 img.delete();
 @endcode
-
-@note todo: imread => cv.imread, imshow => cv.imshow
 
 Try it
 ------
 
-Let's try the above code in the interactive webpage for this tutorial, [imshow](tutorial_js_interactive_imshow.html). 
-@code{.js}
-var src = imread("canvas1");
+Let's try the above code in the below textbox
+
+\htmlonly
+<!DOCTYPE html>
+<head>
+<style>
+canvas {
+    border: 1px solid black;
+}
+</style>
+</head>
+<body>
+<div id="CodeArea">
+<h2>Input your code</h2>
+<button onclick="executeCode()">Try it</button>
+<textarea rows="14" cols="80" id="TestCode" spellcheck="false">
+var src = cv.imread("canvas1");
 var dst = new cv.Mat();
 // To distinguish the input and output, we graying the image.
-// You can try more different conversion.
+// You can try more different conversion
 cv.cvtColor(src, dst, cv.ColorConversionCodes.COLOR_RGBA2GRAY.value, 0);
 cv.cvtColor(dst, dst, cv.ColorConversionCodes.COLOR_GRAY2RGBA.value, 0);
-imshow("canvas2", dst);
+cv.imshow("canvas2", dst);
 src.delete();
 dst.delete();
-@endcode
-Result as below
-![](images/Imread_Imshow_Tutorial_Result.png)
+</textarea>
+</div>
+<div id="showcase">
+    <div>
+        <canvas id="canvas1"></canvas>
+        <canvas id="canvas2"></canvas>
+    </div>
+    <input type="file" id="input" name="file" />
+</div>
+<script async src="opencv.js"></script>
+<script>
+function executeCode() {
+    var text = document.getElementById("TestCode").value;
+    eval(text);
+}
+
+var inputElement = document.getElementById("input");
+inputElement.addEventListener("change", handleFiles, false);
+function handleFiles(e) {
+    var canvas = document.getElementById("canvas1");
+    var canvasWidth = 600;
+    var canvasHeight = 400;
+    var ctx = canvas.getContext("2d");
+    var url = URL.createObjectURL(e.target.files[0]);
+    var img = new Image();
+    img.onload = function() {
+        var scaleFactor=Math.min((canvasWidth/img.width), (canvasHeight/img.height));
+        canvas.width = img.width*scaleFactor;
+        canvas.height = img.height*scaleFactor;
+        ctx.drawImage(img, 0, 0, img.width*scaleFactor, img.height*scaleFactor);
+    }
+    img.src = url;
+}
+</script>
+</body>
+\endhtmlonly
