@@ -44,7 +44,7 @@ set(bindings_cpp "${CMAKE_CURRENT_BINARY_DIR}/bindings.cpp")
 
 set(scripts_hdr_parser "${CMAKE_CURRENT_SOURCE_DIR}/../python/src2/hdr_parser.py")
 
-set(JS_HELPER "${CMAKE_CURRENT_SOURCE_DIR}/src/helper.js")
+set(JS_HELPER "${CMAKE_CURRENT_SOURCE_DIR}/src/helpers.js")
 
 add_custom_command(
    OUTPUT ${bindings_cpp}
