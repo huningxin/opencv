@@ -65,7 +65,8 @@ img.delete();
 Try it
 ------
 
-Let's try the above code in the below textbox
+Here is the demo for above code. Canvas elements named canvas1 and canvas2 have been prepared. Choose an image and 
+click `Try it` to see the result. And you can change the code in the textbox to investigate more.
 
 \htmlonly
 <!DOCTYPE html>
@@ -79,8 +80,8 @@ canvas {
 <body>
 <div id="CodeArea">
 <h2>Input your code</h2>
-<button onclick="executeCode()">Try it</button>
-<textarea rows="14" cols="80" id="TestCode" spellcheck="false">
+<button onclick="executeCode()">Try it</button><br>
+<textarea rows="11" cols="80" id="TestCode" spellcheck="false">
 var src = cv.imread("canvas1");
 var dst = new cv.Mat();
 // To distinguish the input and output, we graying the image.
@@ -110,16 +111,13 @@ var inputElement = document.getElementById("input");
 inputElement.addEventListener("change", handleFiles, false);
 function handleFiles(e) {
     var canvas = document.getElementById("canvas1");
-    var canvasWidth = 600;
-    var canvasHeight = 400;
     var ctx = canvas.getContext("2d");
     var url = URL.createObjectURL(e.target.files[0]);
     var img = new Image();
     img.onload = function() {
-        var scaleFactor=Math.min((canvasWidth/img.width), (canvasHeight/img.height));
-        canvas.width = img.width*scaleFactor;
-        canvas.height = img.height*scaleFactor;
-        ctx.drawImage(img, 0, 0, img.width*scaleFactor, img.height*scaleFactor);
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx.drawImage(img, 0, 0, img.width, img.height);
     }
     img.src = url;
 }

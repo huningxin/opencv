@@ -62,7 +62,8 @@ function addWeighted(value) {
 Try it
 ------
 
-Slide the below trackbar to see the result. And you can change the callback function and investigate more.
+Here is the demo for above code. Trackbar and input images are ready. Slide the trackbar to see the result. 
+And you can change the callback function and investigate more.
 
 \htmlonly
 <head>
@@ -75,7 +76,7 @@ canvas {
 <body>
 <div id="CodeArea">
 <h2>Input your code</h2>
-<textarea rows="12" cols="70" id="TestCode" spellcheck="false">
+<textarea rows="8" cols="70" id="TestCode" spellcheck="false">
 var alpha = value/document.getElementById("trackbar").max;
 var beta = ( 1.0 - alpha );
 var dst = new cv.Mat();
