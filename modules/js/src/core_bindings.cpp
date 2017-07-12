@@ -77,8 +77,8 @@ namespace Utils{
         return emscripten::val(mat);
     }
 
-    cv::Mat* createMat(Size size, int type, intptr_t data, size_t step) {
-        return new cv::Mat(size, type, reinterpret_cast<void*>(data), step);
+    cv::Mat* createMat(int rows, int cols, int type, intptr_t data, size_t step) {
+        return new cv::Mat(rows, cols, type, reinterpret_cast<void*>(data), step);
     }
 
 
@@ -175,6 +175,7 @@ EMSCRIPTEN_BINDINGS(Utils) {
         //.constructor<const Mat&>()
         .constructor<Size, int>()
         .constructor<int, int, int>()
+        .constructor<int, int, int, const Scalar&>()
         .constructor(&Utils::createMat, allow_raw_pointers())
         .constructor(&Utils::createMat2, allow_raw_pointers())
         .function("elemSize1", select_overload<size_t()const>(&cv::Mat::elemSize1))
