@@ -159,16 +159,29 @@ namespace Utils{
         return obj.copyTo(mat, mask);
     }
 
-    void rotatedRectPoints(const cv::RotatedRect& obj, std::vector<cv::Point2f>& points) {
-        points.resize(4);
-        return obj.points(points.data());
+    emscripten::val rotatedRectPoints(const cv::RotatedRect& obj) {
+        cv::Point2f points[4];
+        obj.points(points);
+        emscripten::val pointsArray = emscripten::val::array();
+        for (int i = 0; i < 4; i++) {
+            pointsArray.call<void>("push", points[i]);
+        }
+        return pointsArray;
+    }
+
+    Rect rotatedRectBoundingRect(const cv::RotatedRect& obj) {
+        return obj.boundingRect();
+    }
+
+    Rect2f rotatedRectBoundingRect2f(const cv::RotatedRect& obj) {
+        return obj.boundingRect2f();
     }
 
     int cvMatDepth(int flags) {
         return CV_MAT_DEPTH(flags);
     }
 
-    class MinMaxLocResult {
+    class MinMaxLoc {
       public:
         double minVal;
         double maxVal;
@@ -176,12 +189,16 @@ namespace Utils{
         Point maxLoc;
     };
 
-    void minMaxLoc(const cv::Mat& src, MinMaxLocResult& result, const cv::Mat& mask) {
-        return cv::minMaxLoc(src, &result.minVal, &result.maxVal, &result.minLoc, &result.maxLoc, mask);
+    MinMaxLoc minMaxLoc(const cv::Mat& src, const cv::Mat& mask) {
+        MinMaxLoc result;
+        cv::minMaxLoc(src, &result.minVal, &result.maxVal, &result.minLoc, &result.maxLoc, mask);
+        return result;
     }
 
-    void minMaxLoc_1(const cv::Mat& src, MinMaxLocResult& result) {
-        return cv::minMaxLoc(src, &result.minVal, &result.maxVal, &result.minLoc, &result.maxLoc);
+    MinMaxLoc minMaxLoc_1(const cv::Mat& src) {
+        MinMaxLoc result;
+        cv::minMaxLoc(src, &result.minVal, &result.maxVal, &result.minLoc, &result.maxLoc);
+        return result;
     }
 
     class Circle {
@@ -190,35 +207,37 @@ namespace Utils{
         float radius;
     };
 
-    void minEnclosingCircle(const cv::Mat& points, Circle& circle) {
-        return cv::minEnclosingCircle(points, circle.center, circle.radius);
+    Circle minEnclosingCircle(const cv::Mat& points) {
+        Circle circle;
+        cv::minEnclosingCircle(points, circle.center, circle.radius);
+        return circle;
+    }
+
+    emscripten::val CamShiftWrapper(const cv::Mat& arg1, Rect& arg2, TermCriteria arg3) {
+        RotatedRect rotatedRect = cv::CamShift(arg1, arg2, arg3);
+        emscripten::val result = emscripten::val::array();
+        result.call<void>("push", rotatedRect);
+        result.call<void>("push", arg2);
+        return result;
+    }
+
+    emscripten::val meanShiftWrapper(const cv::Mat& arg1, Rect& arg2, TermCriteria arg3) {
+        int n = cv::meanShift(arg1, arg2, arg3);
+        emscripten::val result = emscripten::val::array();
+        result.call<void>("push", n);
+        result.call<void>("push", arg2);
+        return result;
     }
 }
 
 EMSCRIPTEN_BINDINGS(Utils) {
 
     register_vector<int>("IntVector");
-    register_vector<char>("CharVector");
-    register_vector<unsigned>("UnsignedVector");
-    register_vector<unsigned char>("UCharVector");
-    register_vector<std::string>("StrVector");
-    register_vector<emscripten::val>("EmvalVector");
     register_vector<float>("FloatVector");
-    register_vector<std::vector<int>>("IntVectorVector");
-    register_vector<std::vector<Point>>("PointVectorVector");
+    register_vector<double>("DoubleVector");
     register_vector<cv::Point>("PointVector");
-    register_vector<cv::Vec4i>("Vec4iVector");
     register_vector<cv::Mat>("MatVector");
-    register_vector<cv::KeyPoint>("KeyPointVector");
     register_vector<cv::Rect>("RectVector");
-    register_vector<cv::Point2f>("Point2fVector");
-
-    emscripten::class_<cv::TermCriteria>("TermCriteria")
-        .constructor<>()
-        .constructor<int, int, double>()
-        .property("type", &cv::TermCriteria::type)
-        .property("maxCount", &cv::TermCriteria::maxCount)
-        .property("epsilon", &cv::TermCriteria::epsilon);
 
     emscripten::class_<cv::Mat>("Mat")
         .constructor<>()
@@ -297,84 +316,77 @@ EMSCRIPTEN_BINDINGS(Utils) {
         .function("get_float_at", select_overload<float&(int, int, int)>(&cv::Mat::at<float>))
         .function( "getROI_Rect", select_overload<Mat(const Rect&)const>(&cv::Mat::operator()));
 
-    emscripten::class_<cv::Vec<int,4>>("Vec4i")
-        .constructor<>()
-        .constructor<int, int, int, int>();
-
-    emscripten::class_<cv::RNG> ("RNG");
+    emscripten::value_object<cv::TermCriteria>("TermCriteria")
+        .field("type", &cv::TermCriteria::type)
+        .field("maxCount", &cv::TermCriteria::maxCount)
+        .field("epsilon", &cv::TermCriteria::epsilon);
 
 #define EMSCRIPTEN_CV_SIZE(type) \
-    value_array<type>("#type") \
-        .element(&type::height) \
-        .element(&type::width);
+    emscripten::value_object<type>("#type") \
+        .field("width", &type::width) \
+        .field("height", &type::height);
 
     EMSCRIPTEN_CV_SIZE(Size)
     EMSCRIPTEN_CV_SIZE(Size2f)
 
 #define EMSCRIPTEN_CV_POINT(type) \
-    value_array<type>("#type") \
-        .element(&type::x) \
-        .element(&type::y); \
+    emscripten::value_object<type>("#type") \
+        .field("x", &type::x) \
+        .field("y", &type::y); \
 
     EMSCRIPTEN_CV_POINT(Point)
     EMSCRIPTEN_CV_POINT(Point2f)
 
 #define EMSCRIPTEN_CV_RECT(type, name) \
-    emscripten::class_<cv::Rect_<type>> (name) \
-        .constructor<>() \
-        .constructor<const cv::Point_<type>&, const cv::Size_<type>&>() \
-        .constructor<type, type, type, type>() \
-        .constructor<const cv::Rect_<type>&>() \
-        .property("x", &cv::Rect_<type>::x) \
-        .property("y", &cv::Rect_<type>::y) \
-        .property("width", &cv::Rect_<type>::width) \
-        .property("height", &cv::Rect_<type>::height);
+    emscripten::value_object<cv::Rect_<type>> (name) \
+        .field("x", &cv::Rect_<type>::x) \
+        .field("y", &cv::Rect_<type>::y) \
+        .field("width", &cv::Rect_<type>::width) \
+        .field("height", &cv::Rect_<type>::height);
 
     EMSCRIPTEN_CV_RECT(int, "Rect")
     EMSCRIPTEN_CV_RECT(float, "Rect2f")
 
-    emscripten::class_<cv::RotatedRect>("RotatedRect")
-        .constructor<>()
-        .constructor<const Point2f&, const Size2f&, float>()
-        .property("center", &cv::RotatedRect::center)
-        .property("size", &cv::RotatedRect::size)
-        .property("angle", &cv::RotatedRect::angle)
-        .function("points", select_overload<void(const cv::RotatedRect&, std::vector<Point2f>&)>(&Utils::rotatedRectPoints))
-        .function("boundingRect", select_overload<Rect()const>(&cv::RotatedRect::boundingRect))
-        .function("boundingRect2f", select_overload<Rect2f()const>(&cv::RotatedRect::boundingRect2f));
+    emscripten::value_object<cv::RotatedRect>("RotatedRect")
+        .field("center", &cv::RotatedRect::center)
+        .field("size", &cv::RotatedRect::size)
+        .field("angle", &cv::RotatedRect::angle);
 
-    emscripten::class_<cv::Scalar_<double>> ("Scalar")
-        .constructor<>()
-        .constructor<double>()
-        .constructor<double, double>()
-        .constructor<double, double, double>()
-        .constructor<double, double, double, double>()
-        .class_function("all", &cv::Scalar_<double>::all)
-        .function("isReal", select_overload<bool()const>(&cv::Scalar_<double>::isReal));
+    function("rotatedRectPoints", select_overload<emscripten::val(const cv::RotatedRect&)>(&Utils::rotatedRectPoints));
+    function("rotatedRectBoundingRect", select_overload<Rect(const cv::RotatedRect&)>(&Utils::rotatedRectBoundingRect));
+    function("rotatedRectBoundingRect2f", select_overload<Rect2f(const cv::RotatedRect&)>(&Utils::rotatedRectBoundingRect2f));
 
-    emscripten::class_<Utils::MinMaxLocResult>("MinMaxLocResult")
-        .constructor<>()
-        .property("minVal", &Utils::MinMaxLocResult::minVal)
-        .property("maxVal", &Utils::MinMaxLocResult::maxVal)
-        .property("minLoc", &Utils::MinMaxLocResult::minLoc)
-        .property("maxLoc", &Utils::MinMaxLocResult::maxLoc);
+    emscripten::value_array<cv::Scalar_<double>> ("Scalar")
+        .element(index<0>())
+        .element(index<1>())
+        .element(index<2>())
+        .element(index<3>());
 
-    emscripten::class_<Utils::Circle>("Circle")
-        .constructor<>()
-        .property("center", &Utils::Circle::center)
-        .property("radius", &Utils::Circle::radius);
+    emscripten::value_object<Utils::MinMaxLoc>("MinMaxLoc")
+        .field("minVal", &Utils::MinMaxLoc::minVal)
+        .field("maxVal", &Utils::MinMaxLoc::maxVal)
+        .field("minLoc", &Utils::MinMaxLoc::minLoc)
+        .field("maxLoc", &Utils::MinMaxLoc::maxLoc);
 
-    function("minEnclosingCircle", select_overload<void(const cv::Mat&, Utils::Circle&)>(&Utils::minEnclosingCircle));
+    emscripten::value_object<Utils::Circle>("Circle")
+        .field("center", &Utils::Circle::center)
+        .field("radius", &Utils::Circle::radius);
 
-    function("minMaxLoc", select_overload<void(const cv::Mat&, Utils::MinMaxLocResult&, const cv::Mat&)>(&Utils::minMaxLoc));
+    function("minEnclosingCircle", select_overload<Utils::Circle(const cv::Mat&)>(&Utils::minEnclosingCircle));
 
-    function("minMaxLoc", select_overload<void(const cv::Mat&, Utils::MinMaxLocResult&)>(&Utils::minMaxLoc_1));
+    function("minMaxLoc", select_overload<Utils::MinMaxLoc(const cv::Mat&, const cv::Mat&)>(&Utils::minMaxLoc));
+
+    function("minMaxLoc", select_overload<Utils::MinMaxLoc(const cv::Mat&)>(&Utils::minMaxLoc_1));
 
     function("matFromArray", &Utils::matFromArray);
 
     function("morphologyDefaultBorderValue", &cv::morphologyDefaultBorderValue);
 
     function("CV_MAT_DEPTH", &Utils::cvMatDepth);
+
+    function("CamShift", select_overload<emscripten::val(const cv::Mat&, Rect&, TermCriteria)>(&Utils::CamShiftWrapper));
+
+    function("meanShift", select_overload<emscripten::val(const cv::Mat&, Rect&, TermCriteria)>(&Utils::meanShiftWrapper));
 
     constant("CV_8UC1", CV_8UC1) ;
     constant("CV_8UC2", CV_8UC2) ;

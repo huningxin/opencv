@@ -78,3 +78,178 @@ Module["VideoCapture"] = function(videoID) {
         frame.data().set(ctx.getImageData(0, 0, video.width, video.height).data);
     };
 }
+
+function Point(x, y) {
+    this.x = typeof(x) === "undefined" ? 0 : x;
+    this.y = typeof(y) === "undefined" ? 0 : y;
+}
+
+Module["Point"] = Point;
+
+function Size(width, height) {
+    this.width = typeof(width) === "undefined" ? 0 : width;
+    this.height = typeof(height) === "undefined" ? 0 : height;
+}
+
+Module["Size"] = Size;
+
+function Rect() {
+    var x, y, width, height;
+    switch (arguments.length) {
+        case 0: {
+            // new cv.Rect()
+            this.x = 0;
+            this.y = 0;
+            this.width = 0;
+            this.height = 0;
+            break;
+        }
+        case 1: {
+            // new cv.Rect(rect)
+            var rect = arguments[0];
+            this.x = rect.x;
+            this.y = rect.y;
+            this.width = rect.width;
+            this.height = rect.height;
+            break;
+        }
+        case 2: {
+            // new cv.Rect(point, size)
+            var point = arguments[0];
+            var size = arguments[1];
+            this.x = point.x;
+            this.y = point.y;
+            this.width = size.width;
+            this.height = size.height;
+            break;
+        }
+        case 4: {
+            // new cv.Rect(x, y, width, height)
+            this.x = arguments[0];
+            this.y = arguments[1];
+            this.width = arguments[2];
+            this.height = arguments[3];
+            break
+        }
+        default: {
+            throw("Invalid arguments");
+        }
+    }
+}
+
+Module["Rect"] = Rect;
+
+function RotatedRect() {
+    switch (arguments.length) {
+        case 0: {
+            this.center = {x: 0, y: 0};
+            this.size = {width: 0, height: 0};
+            this.angle = 0;
+            break;
+        }
+        case 3: {
+            this.center = arguments[0];
+            this.size = arguments[1];
+            this.angle = arguments[2];
+            break;
+        }
+        default: {
+            throw("Invalid arguments");
+        }
+    }
+}
+
+RotatedRect.points = function (obj) {
+    return Module.rotatedRectPoints(obj);
+}
+
+RotatedRect.boundingRect = function (obj) {
+    return Module.rotatedRectBoundingRect(obj);
+}
+
+RotatedRect.boundingRect2f = function (obj) {
+    return Module.rotatedRectBoundingRect2f(obj);
+}
+
+Module["RotatedRect"] = RotatedRect;
+
+function Scalar(v0, v1, v2, v3) {
+    this.push(typeof(v0) === 'undefined' ? 0 : v0);
+    this.push(typeof(v1) === 'undefined' ? 0 : v1);
+    this.push(typeof(v2) === 'undefined' ? 0 : v2);
+    this.push(typeof(v3) === 'undefined' ? 0 : v3);
+}
+
+Scalar.prototype = new Array;
+
+Scalar.all = function(v) {
+    return new Scalar(v, v, v, v);
+}
+
+Module["Scalar"] = Scalar;
+
+function MinMaxLoc() {
+    switch (arguments.length) {
+        case 0: {
+            this.minVal = 0;
+            this.maxVal = 0;
+            this.minLoc = new Point();
+            this.maxLoc = new Point();
+            break;
+        }
+        case 4: {
+            this.minVal = arguments[0];
+            this.maxVal = arguments[1];
+            this.minLoc = arguments[2];
+            this.maxLoc = arguments[3];
+            break;
+        }
+        default: {
+            throw("Invalid arguments");
+        }
+    }
+}
+
+Module["MinMaxLoc"] = MinMaxLoc;
+
+function Circle() {
+    switch (arguments.length) {
+        case 0: {
+            this.center = new Point();
+            this.radius = 0;
+            break;
+        }
+        case 2: {
+            this.center = arguments[0];
+            this.radius = arguments[1];
+            break;
+        }
+        default: {
+            throw("Invalid arguments");
+        }
+    }
+}
+
+Module["Circle"] = Circle;
+
+function TermCriteria() {
+    switch (arguments.length) {
+        case 0: {
+            this.type = 0;
+            this.maxCount = 0;
+            this.epsilon = 0;
+            break;
+        }
+        case 3: {
+            this.type = arguments[0];
+            this.maxCount = arguments[1];
+            this.epsilon = arguments[2];
+            break;
+        }
+        default: {
+            throw("Invalid arguments");
+        }
+    }
+}
+
+Module["TermCriteria"] = TermCriteria;
