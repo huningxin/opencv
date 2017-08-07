@@ -54,46 +54,39 @@ using namespace cv::ml;
 namespace Utils{
 
     template<typename T>
-    emscripten::val data(const cv::Mat& mat) {
+    emscripten::val matData(const cv::Mat& mat) {
         return emscripten::val(emscripten::memory_view<T>( (mat.total()*mat.elemSize())/sizeof(T), (T*) mat.data));
     }
 
+    template<typename T>
     emscripten::val matPtrI(const cv::Mat& mat, int i) {
-        return emscripten::val(emscripten::memory_view<uint8_t>(mat.step1(0), mat.ptr(i)));
+        return emscripten::val(emscripten::memory_view<T>(mat.step1(0), mat.ptr<T>(i)));
     }
 
+    template<typename T>
     emscripten::val matPtrII(const cv::Mat& mat, int i, int j) {
-        return emscripten::val(emscripten::memory_view<uint8_t>(mat.step1(1), mat.ptr(i,j)));
-    }
-
-    emscripten::val  matFromArray(const emscripten::val& object, int type) {
-        int w=  object["width"].as<unsigned>();
-        int h=  object["height"].as<unsigned>();
-        std::string str = object["data"]["buffer"].as<std::string>();
-
-        cv::Mat mat(h, w, type);
-        memcpy(mat.data, str.data(), mat.total()*mat.elemSize());
-        
-        return emscripten::val(mat);
+        return emscripten::val(emscripten::memory_view<T>(mat.step1(1), mat.ptr<T>(i,j)));
     }
 
     cv::Mat* createMat(int rows, int cols, int type, intptr_t data, size_t step) {
         return new cv::Mat(rows, cols, type, reinterpret_cast<void*>(data), step);
     }
 
-
-    cv::Mat* createMat2(const std::vector<unsigned char>& vector) {
-        return new cv::Mat(vector, false);
-    }
-
     // returning MatSize
-    static emscripten::val getMatSize(const cv::Mat& mat)
-    {
+    static emscripten::val getMatSize(const cv::Mat& mat) {
       emscripten::val size = emscripten::val::array();
       for (int i = 0; i < mat.dims; i++) {
         size.call<void>("push", mat.size[i]);
       }
       return size;
+    }
+
+    static emscripten::val getMatStep(const cv::Mat& mat) {
+      emscripten::val step = emscripten::val::array();
+      for (int i = 0; i < mat.dims; i++) {
+        step.call<void>("push", mat.step[i]);
+      }
+      return step;
     }
 
     static Mat eye(int rows, int cols, int type) {
@@ -241,12 +234,31 @@ EMSCRIPTEN_BINDINGS(Utils) {
 
     emscripten::class_<cv::Mat>("Mat")
         .constructor<>()
-        //.constructor<const Mat&>()
+        .constructor<const Mat&>()
         .constructor<Size, int>()
         .constructor<int, int, int>()
         .constructor<int, int, int, const Scalar&>()
         .constructor(&Utils::createMat, allow_raw_pointers())
-        .constructor(&Utils::createMat2, allow_raw_pointers())
+
+        .class_function("eye",select_overload<Mat(int, int, int)>(&Utils::eye))
+        .class_function("eye",select_overload<Mat(Size, int)>(&Utils::eye))
+        .class_function("ones",select_overload<Mat(int, int, int)>(&Utils::mat_ones_iii))
+        .class_function("ones",select_overload<Mat(Size, int)>(&Utils::mat_ones_Si))
+        .class_function("zeros",select_overload<Mat(int, int, int)>(&Utils::mat_zeros_iii))
+        .class_function("zeros",select_overload<Mat(Size, int)>(&Utils::mat_zeros_Si))
+
+        .property("rows", &cv::Mat::rows)
+        .property("cols", &cv::Mat::cols)
+        .property("size" , &Utils::getMatSize)
+        .property("step" , &Utils::getMatStep)
+        .property("data", &Utils::matData<unsigned char>)
+        .property("data8S", &Utils::matData<char>)
+        .property("data16U", &Utils::matData<unsigned short>)
+        .property("data16S", &Utils::matData<short>)
+        .property("data32S", &Utils::matData<int>)
+        .property("data32F", &Utils::matData<float>)
+        .property("data64F", &Utils::matData<double>)
+
         .function("elemSize1", select_overload<size_t()const>(&cv::Mat::elemSize1))
         //.function("assignTo", select_overload<void(Mat&, int)const>(&cv::Mat::assignTo))
         .function("channels", select_overload<int()const>(&cv::Mat::channels))
@@ -255,8 +267,7 @@ EMSCRIPTEN_BINDINGS(Utils) {
         .function("convertTo",  select_overload<void(const Mat&, Mat&, int, double)>(&Utils::convertTo_2))
         .function("total", select_overload<size_t()const>(&cv::Mat::total))
         .function("row", select_overload<Mat(int)const>(&cv::Mat::row))
-        .class_function("eye",select_overload<Mat(int, int, int)>(&Utils::eye))
-        .class_function("eye",select_overload<Mat(Size, int)>(&Utils::eye))
+
         .function("create", select_overload<void(int, int, int)>(&cv::Mat::create))
         .function("create", select_overload<void(Size, int)>(&cv::Mat::create))
         .function("rowRange", select_overload<Mat(int, int)const>(&cv::Mat::rowRange))
@@ -272,10 +283,7 @@ EMSCRIPTEN_BINDINGS(Utils) {
         .function("colRange", select_overload<Mat(const Range&)const>(&cv::Mat::colRange))
         .function("step1", select_overload<size_t(int)const>(&cv::Mat::step1))
         .function("clone", select_overload<Mat()const>(&cv::Mat::clone))
-        .class_function("ones",select_overload<Mat(int, int, int)>(&Utils::mat_ones_iii))
-        .class_function("ones",select_overload<Mat(Size, int)>(&Utils::mat_ones_Si))
-        .class_function("zeros",select_overload<Mat(int, int, int)>(&Utils::mat_zeros_iii))
-        .class_function("zeros",select_overload<Mat(Size, int)>(&Utils::mat_zeros_Si))
+        
         .function("depth", select_overload<int()const>(&cv::Mat::depth))
         .function("col", select_overload<Mat(int)const>(&cv::Mat::col))
 
@@ -284,37 +292,46 @@ EMSCRIPTEN_BINDINGS(Utils) {
         .function("inv", select_overload<Mat(const Mat&, int)>(&Utils::matInv))
         .function("t", select_overload<Mat(const Mat&)>(&Utils::matT))
 
-        .property("rows", &cv::Mat::rows)
-        .property("cols", &cv::Mat::cols)
+        .function("ptr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<unsigned char>))
+        .function("ptr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<unsigned char>))
+        .function("ucharPtr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<unsigned char>))
+        .function("ucharPtr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<unsigned char>))
+        .function("charPtr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<char>))
+        .function("charPtr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<char>))
+        .function("shortPtr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<short>))
+        .function("shortPtr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<short>))
+        .function("ushortPtr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<unsigned short>))
+        .function("ushortPtr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<unsigned short>))
+        .function("intPtr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<int>))
+        .function("intPtr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<int>))
+        .function("floatPtr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<float>))
+        .function("floatPtr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<float>))
+        .function("doublePtr", select_overload<val(const Mat&, int)>(&Utils::matPtrI<double>))
+        .function("doublePtr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII<double>))
 
-        .function("data", &Utils::data<unsigned char>)
-        .function("data8S", &Utils::data<char>)
-        .function("data16u", &Utils::data<unsigned short>)
-        .function("data16s", &Utils::data<short>)
-        .function("data32s", &Utils::data<int>)
-        .function("data32f", &Utils::data<float>)
-        .function("data64f", &Utils::data<double>)
+        .function("charAt", select_overload<char&(int)>(&cv::Mat::at<char>))
+        .function("charAt", select_overload<char&(int, int)>(&cv::Mat::at<char>))
+        .function("charAt", select_overload<char&(int, int, int)>(&cv::Mat::at<char>))
+        .function("ucharAt", select_overload<unsigned char&(int)>(&cv::Mat::at<unsigned char>))
+        .function("ucharAt", select_overload<unsigned char&(int, int)>(&cv::Mat::at<unsigned char>))
+        .function("ucharAt", select_overload<unsigned char&(int, int, int)>(&cv::Mat::at<unsigned char>))
+        .function("shortAt", select_overload<short&(int)>(&cv::Mat::at<short>))
+        .function("shortAt", select_overload<short&(int, int)>(&cv::Mat::at<short>))
+        .function("shortAt", select_overload<short&(int, int, int)>(&cv::Mat::at<short>))
+        .function("ushortAt", select_overload<unsigned short&(int)>(&cv::Mat::at<unsigned short>))
+        .function("ushortAt", select_overload<unsigned short&(int, int)>(&cv::Mat::at<unsigned short>))
+        .function("ushortAt", select_overload<unsigned short&(int, int, int)>(&cv::Mat::at<unsigned short>))
+        .function("intAt" , select_overload<int&(int)>(&cv::Mat::at<int>) )
+        .function("intAt", select_overload<int&(int, int)>(&cv::Mat::at<int>) )
+        .function("intAt", select_overload<int&(int, int, int)>(&cv::Mat::at<int>) )
+        .function("floatAt", select_overload<float&(int)>(&cv::Mat::at<float>))
+        .function("floatAt", select_overload<float&(int, int)>(&cv::Mat::at<float>))
+        .function("floatAt", select_overload<float&(int, int, int)>(&cv::Mat::at<float>))
+        .function("doubleAt", select_overload<double&(int, int, int)>(&cv::Mat::at<double>))
+        .function("doubleAt", select_overload<double&(int)>(&cv::Mat::at<double>))
+        .function("doubleAt", select_overload<double&(int, int)>(&cv::Mat::at<double>))
 
-        .function("ptr", select_overload<val(const Mat&, int)>(&Utils::matPtrI))
-        .function("ptr", select_overload<val(const Mat&, int, int)>(&Utils::matPtrII))
-
-        .function("size" , &Utils::getMatSize)
-        .function("get_uchar_at" , select_overload<unsigned char&(int)>(&cv::Mat::at<unsigned char>))
-        .function("get_uchar_at", select_overload<unsigned char&(int, int)>(&cv::Mat::at<unsigned char>))
-        .function("get_uchar_at", select_overload<unsigned char&(int, int, int)>(&cv::Mat::at<unsigned char>))
-        .function("get_ushort_at", select_overload<unsigned short&(int)>(&cv::Mat::at<unsigned short>))
-        .function("get_ushort_at", select_overload<unsigned short&(int, int)>(&cv::Mat::at<unsigned short>))
-        .function("get_ushort_at", select_overload<unsigned short&(int, int, int)>(&cv::Mat::at<unsigned short>))
-        .function("get_int_at" , select_overload<int&(int)>(&cv::Mat::at<int>) )
-        .function("get_int_at", select_overload<int&(int, int)>(&cv::Mat::at<int>) )
-        .function("get_int_at", select_overload<int&(int, int, int)>(&cv::Mat::at<int>) )
-        .function("get_double_at", select_overload<double&(int, int, int)>(&cv::Mat::at<double>))
-        .function("get_double_at", select_overload<double&(int)>(&cv::Mat::at<double>))
-        .function("get_double_at", select_overload<double&(int, int)>(&cv::Mat::at<double>))
-        .function("get_float_at", select_overload<float&(int)>(&cv::Mat::at<float>))
-        .function("get_float_at", select_overload<float&(int, int)>(&cv::Mat::at<float>))
-        .function("get_float_at", select_overload<float&(int, int, int)>(&cv::Mat::at<float>))
-        .function( "getROI_Rect", select_overload<Mat(const Rect&)const>(&cv::Mat::operator()));
+        .function("getRoiRect", select_overload<Mat(const Rect&)const>(&cv::Mat::operator()));
 
     emscripten::value_object<cv::TermCriteria>("TermCriteria")
         .field("type", &cv::TermCriteria::type)
@@ -377,8 +394,6 @@ EMSCRIPTEN_BINDINGS(Utils) {
     function("minMaxLoc", select_overload<Utils::MinMaxLoc(const cv::Mat&, const cv::Mat&)>(&Utils::minMaxLoc));
 
     function("minMaxLoc", select_overload<Utils::MinMaxLoc(const cv::Mat&)>(&Utils::minMaxLoc_1));
-
-    function("matFromArray", &Utils::matFromArray);
 
     function("morphologyDefaultBorderValue", &cv::morphologyDefaultBorderValue);
 
