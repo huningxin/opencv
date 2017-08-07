@@ -1,18 +1,37 @@
-Module["imread"] = function(canvasID) {
-    var canvas = document.getElementById(canvasID);
-    if (canvas === null || !(canvas instanceof HTMLCanvasElement)) {
-        throw("Please input the valid canvas id.");
+Module["imread"] = function(imageSource) {
+    var img = null;
+    if (typeof imageSource === "string")
+        img = document.getElementById(imageSource);
+    else
+        img = imageSource;
+    var canvas = null;
+    var ctx = null;
+    if (img instanceof HTMLImageElement) {
+        canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0, img.width, img.height);
+    } else if (img instanceof HTMLCanvasElement) {
+        canvas = img;
+        ctx = canvas.getContext("2d");
+    } else {
+        throw("Please input the valid canvas or img id.");
         return;
     }
-    var ctx = canvas.getContext("2d");
+    
     var imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
     return cv.matFromArray(imgData, cv.CV_8UC4);
 }
 
-Module["imshow"] = function(canvasID, mat) {
-    var canvas = document.getElementById(canvasID);
-    if (canvas === null || !(canvas instanceof HTMLCanvasElement)) {
-        throw("Please input the valid canvas id.");
+Module["imshow"] = function(canvasSource, mat) {
+    var canvas = null;
+    if (typeof canvasSource === "string")
+        canvas = document.getElementById(canvasSource);
+    else
+        canvas = canvasSource;
+    if (!(canvas instanceof HTMLCanvasElement)) {
+        throw("Please input the valid canvas element or id.");
         return;
     }
     if (!(mat instanceof cv.Mat)) {
@@ -50,10 +69,14 @@ Module["imshow"] = function(canvasID, mat) {
     img.delete();
 }
 
-Module["VideoCapture"] = function(videoID) {
-    var video = document.getElementById(videoID);
-    if (video === null || !(video instanceof HTMLVideoElement)) {
-        throw("Please input the valid video id.");
+Module["VideoCapture"] = function(videoSource) {
+    var video = null;
+    if (typeof videoSource === "string")
+        video = document.getElementById(videoSource);
+    else
+        video = videoSource;
+    if (!(video instanceof HTMLVideoElement)) {
+        throw("Please input the valid video element or id.");
         return;
     }
     var canvas = document.createElement("canvas");
