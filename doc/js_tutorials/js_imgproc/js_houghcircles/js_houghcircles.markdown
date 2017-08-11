@@ -4,9 +4,8 @@ Hough Circle Transform {#tutorial_js_houghcircles}
 Goal
 ----
 
-In this chapter,
-    -   We will learn to use Hough Transform to find circles in an image.
-    -   We will see these functions: **cv.HoughCircles()**
+-   We will learn to use Hough Transform to find circles in an image.
+-   We will learn these functions: **cv.HoughCircles()**
 
 Theory
 ------
@@ -32,8 +31,8 @@ We use the function: **cv.HoughCircles (image, circles, method, dp, minDist, par
 Try it
 ------
 
-Here is a demo. Canvas elements named HoughCirclesPCanvasInput and HoughCirclesPCanvasOutput have been prepared. Choose an image and
-click `Try it` to see the result. And you can change the code in the textbox to investigate more.
+Try this demo using the code above. Canvas elements named HoughCirclesPCanvasInput and HoughCirclesPCanvasOutput have been prepared. Choose an image and
+click `Try it` to see the result. You can change the code in the textbox to investigate more.
 
 \htmlonly
 <!DOCTYPE html>
@@ -52,23 +51,23 @@ canvas {
 <h2>Input your code</h2>
 <button id="HoughCirclesPTryIt" disabled="true" onclick="HoughCirclesPExecuteCode()">Try it</button><br>
 <textarea rows="17" cols="80" id="HoughCirclesPTestCode" spellcheck="false">
-var src = cv.imread("HoughCirclesPCanvasInput");
-var dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8U);
-var circles = new cv.Mat();
-var color = new cv.Scalar(255, 0, 0);
+let src = cv.imread("HoughCirclesPCanvasInput");
+let dst = cv.Mat.zeros(src.rows, src.cols, cv.CV_8U);
+let circles = new cv.Mat();
+let color = new cv.Scalar(255, 0, 0);
 cv.cvtColor(src, src, cv.COLOR_RGBA2GRAY, 0);
-// You can try more different conversion
+// You can try more different parameters
 cv.HoughCircles(src, circles, cv.HOUGH_GRADIENT, 1, 45, 75, 40, 0, 0);
 // draw circles
-for(var i = 0; i < circles.cols; ++i)
-{
-    var x = circles.data32f()[i * 3];
-    var y = circles.data32f()[i * 3 + 1];
-    var radius = circles.data32f()[i * 3 + 2];
-    cv.circle(dst, [x, y], radius, color);
+for (let i = 0; i < circles.cols; ++i) {
+    let x = circles.data32F[i * 3];
+    let y = circles.data32F[i * 3 + 1];
+    let radius = circles.data32F[i * 3 + 2];
+    let center = new cv.Point(x, y);
+    cv.circle(dst, center, radius, color);
 }
 cv.imshow("HoughCirclesPCanvasOutput", dst);
-src.delete(); dst.delete(); circles.delete(); color.delete();
+src.delete(); dst.delete(); circles.delete();
 </textarea>
 <p class="err" id="HoughCirclesPErr"></p>
 </div>
@@ -83,7 +82,7 @@ src.delete(); dst.delete(); circles.delete(); color.delete();
 <script async src="opencv.js" id="opencvjs"></script>
 <script>
 function HoughCirclesPExecuteCode() {
-    var HoughCirclesPText = document.getElementById("HoughCirclesPTestCode").value;
+    let HoughCirclesPText = document.getElementById("HoughCirclesPTestCode").value;
     try {
         eval(HoughCirclesPText);
         document.getElementById("HoughCirclesPErr").innerHTML = " ";
@@ -93,10 +92,10 @@ function HoughCirclesPExecuteCode() {
 }
 
 loadImageToCanvas("coins.jpg", "HoughCirclesPCanvasInput");
-var HoughCirclesPInputElement = document.getElementById("HoughCirclesPInput");
+let HoughCirclesPInputElement = document.getElementById("HoughCirclesPInput");
 HoughCirclesPInputElement.addEventListener("change", HoughCirclesPHandleFiles, false);
 function HoughCirclesPHandleFiles(e) {
-    var HoughCirclesPUrl = URL.createObjectURL(e.target.files[0]);
+    let HoughCirclesPUrl = URL.createObjectURL(e.target.files[0]);
     loadImageToCanvas(HoughCirclesPUrl, "HoughCirclesPCanvasInput");
 }
 
