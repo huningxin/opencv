@@ -39,9 +39,15 @@ backproject the target on each frame for calculation of meanshift. We also need 
 location of window. For histogram, only Hue is considered here. Also, to avoid false values due to
 low light, low light values are discarded using **cv.inRange()** function.
 
+We use the function: **cv.meanShift (probImage, window, criteria)**      
+@param probImage     Back projection of the object histogram. See cv.calcBackProject for details.
+@param window        Initial search window.
+@param criteria      Stop criteria for the iterative search algorithm.
+@return              number of iterations meanShift took to converge and the new location
+
 ### Try it
 
-Here is the demo for cv.meanShift. Some core code is in the textbox, and you can click `try it` to 
+Try this demo for cv.meanShift. Some core code is in the textbox, and you can click `try it` to 
 investigate more.
 
 \htmlonly
@@ -200,7 +206,7 @@ Camshift
 --------
 
 Did you closely watch the last result? There is a problem. Our window always has the same size when
-car is farther away and it is very close to camera. That is not good. We need to adapt the window
+the object is farther away and it is very close to camera. That is not good. We need to adapt the window
 size with size and rotation of the target. Once again, the solution came from "OpenCV Labs" and it
 is called CAMshift (Continuously Adaptive Meanshift) published by Gary Bradsky in his paper
 "Computer Vision Face Tracking for Use in a Perceptual User Interface" in 1988.
@@ -217,10 +223,15 @@ The process is continued until required accuracy is met.
 It is almost same as meanshift, but it returns a rotated rectangle (that is our result) and box
 parameters (used to be passed as search window in next iteration). 
 
+We use the function: **cv.CamShift (probImage, window, criteria)**      
+@param probImage     Back projection of the object histogram. See cv.calcBackProject for details.
+@param window        Initial search window.
+@param criteria      Stop criteria for the iterative search algorithm.
+@return              Rotated rectangle and the new search window
 
 ### Try it
 
-Here is the demo for cv.CamShift. Some core code is in the textbox, and you can click `try it` to 
+Try this demo for cv.CamShift. Some core code is in the textbox, and you can click `try it` to 
 investigate more.
 
 \htmlonly
