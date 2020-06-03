@@ -47,8 +47,11 @@
               Module.FS_createPreloadedFile('/', 'haarcascade_frontalface_default.xml', 'haarcascade_frontalface_default.xml', true, false);
             }],
             postRun: [] ,
-            onRuntimeInitialized: function() {
+            onRuntimeInitialized: async function() {
               console.log("Emscripten runtime is ready, launching QUnit tests...");
+              if (cv instanceof Promise) {
+                cv = await cv;
+              }
               //console.log(cv.getBuildInformation());
               QUnit.start();
             },
