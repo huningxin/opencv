@@ -2,7 +2,7 @@
 #include "common.hpp"
 #include "internal.hpp"
 #include "../include/op_base.hpp"
-#include "../dawn/dawnUtils.h"
+#include "../dawn/dawnUtils.hpp"
 #include <unistd.h>
 
 namespace cv { namespace dnn { namespace webgpu {

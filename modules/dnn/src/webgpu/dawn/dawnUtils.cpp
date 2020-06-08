@@ -5,7 +5,7 @@
 #include <dawn_native/DawnNative.h>
 #include <dawn/webgpu_cpp.h>
 #include "opencv2/core/base.hpp"
-#include "dawnUtils.h"
+#include "dawnUtils.hpp"
 // #endif
 #include <cstring>
 #include <iomanip>
@@ -80,7 +80,7 @@ wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
 }
 
 wgpu::CreateBufferMappedResult CreateBufferMappedFromData(const wgpu::Device& device,
-                                                        const char* data,
+                                                        const void* data,
                                                         size_t size,
                                                         wgpu::BufferUsage usage){
     wgpu::BufferDescriptor descriptor = {};

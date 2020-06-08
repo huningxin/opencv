@@ -2,7 +2,7 @@
 #include "common.hpp"
 #include "context.hpp"
 #include<dawn/webgpu_cpp.h>
-#include "../dawn/dawnUtils.h"
+#include "../dawn/dawnUtils.hpp"
 #include <dawn_native/DawnNative.h>
 namespace cv { namespace dnn { namespace webgpu {
 #ifdef HAVE_WEBGPU

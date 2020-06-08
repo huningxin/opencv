@@ -16,7 +16,7 @@ wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
                                     wgpu::BufferUsage usage);
 
 wgpu::CreateBufferMappedResult CreateBufferMappedFromData(const wgpu::Device& device,
-                                                          const char* data,
+                                                          const void* data,
                                                           size_t size,
                                                           wgpu::BufferUsage usage);
 

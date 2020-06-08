@@ -47,5 +47,6 @@ bool isAvailable();
 
 #include "tensor.hpp"
 #include "buffer.hpp"
+#include "op_base.hpp"
 
 #endif//    OPENCV_DNN_WEBGPU_HPP

@@ -13,6 +13,7 @@ class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
     Tensor(const char* data, std::vector<int>& shape, Format fmt = wFormatFp32);
+    void* map();
     Shape getShape() const;
     int dimSize(const int dim) const;
     int dimNum() const;
@@ -20,7 +21,7 @@ public:
     // Change shape and format to as passed in.
     // Copy data if data != NULL
     // Allocate new internal buffer if new size > old size or alloc flag is true
-    Tensor reshape(const char* data, const std::vector<int>& shape, bool alloc = false, Format fmt = wFormatInvalid);
+    Tensor reshape(const void* data, const std::vector<int>& shape, bool alloc = false, Format fmt = wFormatInvalid);
 
     int getFormat() const;
     size_t size() const { return size_in_byte_; }

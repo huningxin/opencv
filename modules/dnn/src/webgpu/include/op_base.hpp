@@ -10,10 +10,10 @@
 
 #include "../../precomp.hpp"
 #include "wgpucom.hpp"
-#include"../dawn/dawnUtils.h"
+#include"../dawn/dawnUtils.hpp"
 
 namespace cv { namespace dnn { namespace webgpu {
-#ifdef HAVE_WEBGPU
+// #ifdef HAVE_WEBGPU
 class Context;
 
 class OpBase{
@@ -46,7 +46,7 @@ protected:
     uint32_t group_z_;
     std::string type_;
 };
-#endif  //HAVE_WEBGPU
+// #endif  //HAVE_WEBGPU
 
 }}}  //namespace cv::dnn::webgpu
 

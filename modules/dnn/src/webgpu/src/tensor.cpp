@@ -14,6 +14,11 @@ Tensor::Tensor(const char* data, std::vector<int>& shape, Format fmt = wFormatFp
     device_ = wDevice;
     reshape(data, shape);
 }
+void* Tensor::map()
+{
+    return buffer_->getBufferMappedData();
+
+}
 
 Shape Tensor::getShape() const{
     return shape_;
@@ -37,7 +42,7 @@ int Tensor::dimNum() const
     return shape_.size();
 }
 
-Tensor Tensor::reshape(const char* data, const std::vector<int>& shape, bool alloc, Format fmt)
+Tensor Tensor::reshape(const void* data, const std::vector<int>& shape, bool alloc, Format fmt)
 {
     if (device_ == nullptr)
     {
@@ -57,11 +62,12 @@ Tensor Tensor::reshape(const char* data, const std::vector<int>& shape, bool all
 
     if (alloc)
     {
-        buffer_.reset(new Buffer(device_, size_in_byte_, data, buffer_.getBufferUsage());
+        // TODO: specific data type 
+        buffer_.reset(new Buffer(device_, data, size_in_byte_, buffer_->getBufferUsage()));
     }
     else if (data)
     {
-        memcpy(buffer_.getBufferMapped().data, data, size_in_byte_);
+        memcpy(buffer_->getBufferMapped().data, data, size_in_byte_);
     }
 
     return *this;
@@ -72,7 +78,7 @@ int Tensor::getFormat() const
 }
 
 void Tensor::copyTo(Tensor & dst) {
-    dst.reshape(buffer_.getBufferMapped().data, shape_, true, format_);
+    dst.reshape(buffer_->getBufferMapped().data, shape_, true, format_);
 }
 
 // #endif   //HAVE_WEBGPU

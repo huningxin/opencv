@@ -9,13 +9,13 @@ class Buffer {
 // #ifdef HAVE_WEBGPU
 public:
     Buffer(const wgpu::Device& device);
-    Buffer(const wgpu::Device& device, const char* data, size_t size, wgpu::BufferUsage usage = wgpu::BufferUsage::CopyDst);
+    Buffer(const wgpu::Device& device, const void* data, size_t size, wgpu::BufferUsage usage = wgpu::BufferUsage::CopyDst);
 
     ~Buffer() {bufferMapped_.buffer.Destroy(); device_.Release();}
     wgpu::Buffer getWebGPUBuffer() {return bufferMapped_.buffer;}
     wgpu::BufferUsage getBufferUsage() {return usage_;}
     wgpu::CreateBufferMappedResult getBufferMapped() {return bufferMapped_;}
-
+    void* getBufferMappedData() {return bufferMapped_.data;}
 private:
     Buffer();
     wgpu::Device device_;
