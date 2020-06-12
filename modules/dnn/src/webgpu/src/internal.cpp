@@ -11,7 +11,7 @@
 
 namespace cv { namespace dnn { namespace webgpu {
 
-#ifdef HAVE_WEBGPU
+// #ifdef HAVE_WEBGPU
 
 std::vector<uint32_t> compile(const std::string& name,
                               shaderc_shader_kind kind,
@@ -130,7 +130,7 @@ void computePoolOutputShape(const PaddingMode& padding_mode,
     }
 }
 
-#endif
+// #endif
 
 }}}     //namespace cv::dnn::webgpu
 
