@@ -8,16 +8,27 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
     createContext();
     device_ = wDevice;
 }
-    
+Tensor::Tensor(const char* data, Format fmt = wFormatInt32) {
+    createContext();
+    device_ = wDevice;
+    setUniform(data,fmt);
+}
+
 Tensor::Tensor(const char* data, std::vector<int>& shape, Format fmt = wFormatFp32) {
     createContext();
     device_ = wDevice;
     reshape(data, shape);
 }
+
 void* Tensor::map()
 {
     return buffer_->getBufferMappedData();
 
+}
+
+void Tensor::unMap()
+{
+    buffer_->getWebGPUBuffer()->Unmap();
 }
 
 Shape Tensor::getShape() const{
@@ -67,18 +78,32 @@ Tensor Tensor::reshape(const void* data, const std::vector<int>& shape, bool all
     }
     else if (data)
     {
-        memcpy(buffer_->getBufferMapped().data, data, size_in_byte_);
+        memcpy(buffer_->getBufferMapped()->data, data, size_in_byte_);
     }
 
     return *this;
 }
+
+Tensor Tensor::setUniform(const void * data, Format fmt) 
+{
+    if (device_ == nullptr)
+    {
+        CV_Error(Error::StsError, "device is NULL");
+        return *this;
+    }
+    if (checkFormat(fmt) && fmt != format_) format_ = fmt;
+    size_in_byte_ = sizeof(data);
+    memcpy(buffer_->getBufferMapped()->data, data, size_in_byte_);
+    return *this;
+}
+
 int Tensor::getFormat() const
 {
     return format_;
 }
 
 void Tensor::copyTo(Tensor & dst) {
-    dst.reshape(buffer_->getBufferMapped().data, shape_, true, format_);
+    dst.reshape(buffer_->getBufferMapped()->data, shape_, true, format_);
 }
 
 // #endif   //HAVE_WEBGPU

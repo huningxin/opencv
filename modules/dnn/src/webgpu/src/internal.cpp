@@ -43,6 +43,20 @@ std::vector<uint32_t> compile(const std::string& name,
 #endif
 }
 
+void bindTensor(Tensor& tensor, uint32_t binding, std::vector<wgpu::BindGroupEntry>& bgEntries) 
+{
+    wgpu::Buffer* buffer =  tensor.getBuffer()->getWebGPUBuffer();
+    wgpu::BindGroupEntry bgEntry = {
+        binding,
+        *buffer,
+        0,
+        static_cast<uint64_t>(sizeof(*buffer)),
+        nullptr,
+        nullptr
+    };
+    bgEntries.push_back(bgEntry);
+}
+
 void computeConvOutputShapeAndPadding(const PaddingMode& padding_mode,
                                       int& padding_top, int& padding_left,
                                       const int& in_h, const int& in_w,

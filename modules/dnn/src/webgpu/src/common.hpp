@@ -23,9 +23,8 @@ namespace cv { namespace dnn { namespace webgpu {
 
 // #ifdef HAVE_WEBGPU
 
-extern wgpu::Device wDevice;
-extern wgpu::Queue wQueue;
-extern wgpu::CommandEncoder wEncoder;
+extern std::shared_ptr<wgpu::Device> wDevice;
+extern std::shared_ptr<wgpu::Queue> wQueue;
 extern cv::Mutex wContextMtx;
 
 enum ShapeIdx

@@ -12,8 +12,10 @@ class Buffer;
 class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
+    Tensor(const char* data, Format fmt = wFormatInt32);  //uniform buffer
     Tensor(const char* data, std::vector<int>& shape, Format fmt = wFormatFp32);
     void* map();
+    void unMap();
     Shape getShape() const;
     int dimSize(const int dim) const;
     int dimNum() const;
@@ -22,14 +24,14 @@ public:
     // Copy data if data != NULL
     // Allocate new internal buffer if new size > old size or alloc flag is true
     Tensor reshape(const void* data, const std::vector<int>& shape, bool alloc = false, Format fmt = wFormatInvalid);
-
+    Tensor setUniform(const void * data, Format fmt = wFormatInt32);
     int getFormat() const;
     size_t size() const { return size_in_byte_; }
     bool isEmpty() { return size_in_byte_ == 0 ? true : false; }
     void copyTo(Tensor& dst);
     std::shared_ptr<Buffer> getBuffer() { return buffer_; }
 private:
-    wgpu::Device device_;
+    std::shared_ptr<wgpu::Device> device_;
     std::vector<int> shape_;
     size_t size_in_byte_;
     std::shared_ptr<Buffer> buffer_;

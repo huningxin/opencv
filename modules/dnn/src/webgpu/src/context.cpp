@@ -5,13 +5,12 @@
 #include "../dawn/dawnUtils.hpp"
 #include <dawn_native/DawnNative.h>
 namespace cv { namespace dnn { namespace webgpu {
-#ifdef HAVE_WEBGPU
+// #ifdef HAVE_WEBGPU
 
 std::shared_ptr<Context> wCtx;
 std::shared_ptr<Context> wContext;
-wgpu::Device wDevice;
-wgpu::CommandEncoder encoder;
-wgpu::Queue wQueue;
+std::shared_ptr<wgpu::Device> wDevice = nullptr;
+std::shared_ptr<wgpu::Queue> wQueue = nullptr;
 cv::Mutex wContextMtx;
 
 // internally used
@@ -32,7 +31,7 @@ bool isAvailable()
     }
     catch (const cv::Exception& e)
     {
-        CV_LOG_ERROR(NULL, "Failed to init Vulkan environment. " << e.what());
+        CV_LOG_ERROR(NULL, "Failed to init WebGPU-Dawn environment. " << e.what());
         return false;
     }
 
@@ -40,17 +39,15 @@ bool isAvailable()
 }
 Context::Context() {
     //create wgpu::Device
-    wDevice = createCppDawnDevice();
-    wQueue = wDevice.GetDefaultQueue();
-    encoder = wDevice.CreateCommandEncoder();
+    wDevice = std::make_shared<wgpu::Device>(createCppDawnDevice());
+    wQueue = std::make_shared<wgpu::Queue>(wDevice->GetDefaultQueue());
 }
 Context::~Context() {
     //how to release object
-    wDevice.Release();
-    wQueue.Release();
-    encoder.Release();
+    wDevice->Release();
+    wQueue->Release();
 }
 
-#endif
+// #endif
 
 }}}  // namespace cv::dnn::webgpu

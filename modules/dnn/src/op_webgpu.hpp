@@ -12,27 +12,10 @@ namespace dnn
 {
 // #ifdef HAVE_WEBGPU
     std::vector<webgpu::Tensor> WGPUTensors(const std::vector<Ptr<BackendWrapper> >& ptrs);
-    webgpu::Tensor WGPUTENSOR(const Ptr<BackendWrapper>& ptr);
+    webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr);
     void copyToTensor(webgpu::Tensor &dst, const Mat &src);
 
     void copyToMat(Mat &dst, const webgpu::Tensor &src);
-
-    class WGPUBackendNode : public BackendNode 
-    {
-    public:
-        WGPUBackendNode(const std::vector<Ptr<BackendWrapper> >& inputsWrapper,
-                         const std::shared_ptr<webgpu::OpBase> &op,
-                         const std::vector<Ptr<BackendWrapper> >& blobsWrapper =
-                         std::vector<Ptr<BackendWrapper> >());
-
-        bool forward(std::vector<webgpu::Tensor>& outs);
-
-    private:
-        std::vector<webgpu::Tensor> ins;
-        std::vector<webgpu::Tensor> blobs;
-        std::vector<Ptr<BackendWrapper> > inputsWrapper_;
-        std::shared_ptr<webgpu::OpBase> operation;
-    };
 
     class WGPUBackendWrapper : public BackendWrapper
     {
@@ -51,6 +34,23 @@ namespace dnn
         Mat* host;
         bool hostDirty;
         bool deviceDirty;
+    };
+
+    class WGPUBackendNode : public BackendNode 
+    {
+    public:
+        WGPUBackendNode(const std::vector<Ptr<BackendWrapper> >& inputsWrapper,
+                         const std::shared_ptr<webgpu::OpBase> &op,
+                         const std::vector<Ptr<BackendWrapper> >& blobsWrapper =
+                         std::vector<Ptr<BackendWrapper> >());
+
+        bool forward(std::vector<webgpu::Tensor>& outs);
+
+    private:
+        std::vector<webgpu::Tensor> ins;
+        std::vector<webgpu::Tensor> blobs;
+        std::vector<Ptr<BackendWrapper> > inputsWrapper_;
+        std::shared_ptr<webgpu::OpBase> operation;
     };
 // #endif  //HAVE_WEBGPU
 

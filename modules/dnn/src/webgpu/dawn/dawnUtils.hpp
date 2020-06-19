@@ -8,7 +8,7 @@ namespace cv { namespace dnn { namespace webgpu {
 
 // #ifdef HAVE_WEBGPU
 
-wgpu::Device CreateCppDawnDevice();
+wgpu::Device createCppDawnDevice();
 
 wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
                                     const void* data,
@@ -19,13 +19,6 @@ wgpu::CreateBufferMappedResult CreateBufferMappedFromData(const wgpu::Device& de
                                                           const void* data,
                                                           size_t size,
                                                           wgpu::BufferUsage usage);
-
-template <typename T>
-wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,
-                                    wgpu::BufferUsage usage,
-                                    std::initializer_list<T> data) {
-    return CreateBufferFromData(device, data.begin(), uint32_t(sizeof(T) * data.size()), usage);
-}
 
 wgpu::PipelineLayout MakeBasicPipelineLayout(const wgpu::Device& device,
                                              const wgpu::BindGroupLayout* bindGroupLayout);

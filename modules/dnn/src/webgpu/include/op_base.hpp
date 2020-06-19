@@ -25,22 +25,24 @@ public:
                          std::vector<Tensor>& outs) = 0;
 
 protected:
-    void initWebGPUPipeLine();
     void createBindGroupLayout(int buffer_num);
-    void createShaderModule(const uint32_t* spv, size_t sz, const std::string& source = std::string());
-    void createPipeline();
+    void createBindGroup();
+    void createShaderModule(const uint32_t* spv, const std::string& source = std::string());
+    void createComputePipeline();
     void createCommandBuffer();
     void runCommandBuffer();
     wgpu::FenceCompletionStatus WaitForCompletedValue(wgpu::Fence fence, uint64_t completedValue);
     
-    wgpu::Device device_;
+    std::shared_ptr<wgpu::Device> device_;
     wgpu::ComputePipeline pipeline_;
     wgpu::CommandBuffer cmd_buffer_;
     wgpu::BindGroupLayout bindgrouplayout_;
     wgpu::BindGroup bindgroup_;
     wgpu::ShaderModule module_;
     wgpu::PipelineLayout pipeline_layout_;
+    std::vector<wgpu::BindGroupEntry> bgEntries;
 
+    bool needsUniform = false;
     uint32_t group_x_;
     uint32_t group_y_;
     uint32_t group_z_;

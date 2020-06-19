@@ -34,19 +34,16 @@ enum OpType {
 };
 enum PaddingMode { wPaddingModeSame, wPaddingModeValid, wPaddingModeCaffe, wPaddingModeNum };
 enum FusedActivationType { wNone, wRelu, wRelu1, wRelu6, wActivationNum };
+
 typedef std::vector<int> Shape;
-
 bool isAvailable();
-
 //#endif  //HAVE_WEBGPU
 
 }}} //namespace cv::dnn::webgpu
 
-typedef std::vector<int> Shape;
-bool isAvailable();
-
 #include "tensor.hpp"
 #include "buffer.hpp"
 #include "op_base.hpp"
+#include "op_softmax.hpp"
 
 #endif//    OPENCV_DNN_WEBGPU_HPP

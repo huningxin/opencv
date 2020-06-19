@@ -23,6 +23,7 @@ void copyToMat(Mat &dst, webgpu::Tensor &src)
     void *data = src.map();
     Mat tmp(shape, CV_32F, data);
     tmp.copyTo(dst);
+    src.unMap();
 }
 
     webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr)
@@ -133,6 +134,15 @@ void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, const Ptr<BackendNo
     
 // #endif
 }
+
+    bool haveWGPU()
+    {
+#ifdef HAVE_WEBGPU
+        return webgpu::isAvailable();
+#else
+        return false;
+#endif  // HAVE_WEBGPU
+    }
 
 }   //namespace dnn
 

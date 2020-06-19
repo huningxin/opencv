@@ -33,7 +33,7 @@ void PrintDeviceError(WGPUErrorType errorType,  const char* message, void*) {
         case WGPUErrorType_DeviceLost:
             errorTypeName = "WGPUErrorTyp Device lost";
             break;
-        default: WGPUErrorType_Unknown:
+        default:
             errorTypeName = "WGPUErrorTyp Unknown";
             return;
     }
@@ -57,13 +57,9 @@ wgpu::Device createCppDawnDevice() {
     }
     WGPUDevice backendDevice = backendAdapter.CreateDevice();
     DawnProcTable backendProcs = dawn_native::GetProcs();
-    WGPUDevice cDevice = nullptr;
-    DawnProcTable procs;
-    procs = backendProcs;
-    cDevice = backendDevice;
-    dawnProcSetProcs(&procs);
-    procs.deviceSetUncapturedErrorCallback(cDevice, PrintDeviceError, nullptr);
-    return wgpu::Device::Acquire(cDevice);
+    dawnProcSetProcs(&backendProcs);
+    backendProcs.deviceSetUncapturedErrorCallback(backendDevice, PrintDeviceError, nullptr);
+    return wgpu::Device::Acquire(backendDevice);
 }
 
 wgpu::Buffer CreateBufferFromData(const wgpu::Device& device,

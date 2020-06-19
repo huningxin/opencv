@@ -45,6 +45,7 @@
 #include "ie_ngraph.hpp"
 #include "op_vkcom.hpp"
 #include "op_cuda.hpp"
+#include "op_webgpu.hpp"
 
 #include "halide_scheduler.hpp"
 
@@ -240,6 +241,11 @@ private:
 #ifdef HAVE_VULKAN
         if (haveVulkan())
             backends.push_back(std::make_pair(DNN_BACKEND_VKCOM, DNN_TARGET_VULKAN));
+#endif
+
+#ifdef HAVE_WEBGPU
+        if(haveWGPU())
+            backends.push_back(std::make_pair(DNN_BACKEND_WGPU, DNN_TARGET_WGPU));
 #endif
 
 #ifdef HAVE_CUDA
@@ -1118,6 +1124,13 @@ static Ptr<BackendWrapper> wrapMat(int backendId, int targetId, cv::Mat& m)
         return Ptr<BackendWrapper>(new VkComBackendWrapper(m));
 #endif  // HAVE_VULKAN
     }
+    else if (backendId == DNN_BACKEND_WGPU)
+    {
+        CV_Assert(haveWGPU());
+#ifdef HAVE_WEBGPU
+        return Ptr<BackendWrapper>(new WGPUBackendWrapper(m));
+#endif  // HAVE_WEBGPU
+    }
     else if (backendId == DNN_BACKEND_CUDA)
     {
         CV_Assert(haveCUDA());
@@ -1266,6 +1279,12 @@ struct Net::Impl : public detail::NetImplBase
                 return Ptr<BackendWrapper>(new VkComBackendWrapper(baseBuffer, host));
   #endif
             }
+            else if (preferableBackend == DNN_BACKEND_WGPU)
+            {
+#ifdef HAVE_WEBGPU
+                return Ptr<BackendWrapper>(new WGPUBackendWrapper(baseBuffer, host));
+#endif
+            }
             else if (preferableBackend == DNN_BACKEND_CUDA)
             {
                 CV_Assert(haveCUDA());
@@ -1407,6 +1426,8 @@ struct Net::Impl : public detail::NetImplBase
         }
         CV_Assert(preferableBackend != DNN_BACKEND_VKCOM ||
                   preferableTarget == DNN_TARGET_VULKAN);
+        CV_Assert(preferableBackend != DNN_BACKEND_WGPU ||
+                  preferableTarget == DNN_TARGET_WGPU);
         CV_Assert(preferableBackend != DNN_BACKEND_CUDA ||
                   IS_DNN_CUDA_TARGET(preferableTarget));
         if (!netWasAllocated || this->blobsToKeep != blobsToKeep_)
@@ -1439,6 +1460,11 @@ struct Net::Impl : public detail::NetImplBase
             }
 #endif
             if (preferableBackend == DNN_BACKEND_VKCOM && !haveVulkan())
+            {
+                preferableBackend = DNN_BACKEND_OPENCV;
+                preferableTarget = DNN_TARGET_CPU;
+            }
+            if (preferableBackend == DNN_BACKEND_WGPU && !haveWGPU())
             {
                 preferableBackend = DNN_BACKEND_OPENCV;
                 preferableTarget = DNN_TARGET_CPU;
@@ -1629,6 +1655,8 @@ struct Net::Impl : public detail::NetImplBase
         }
         else if (preferableBackend == DNN_BACKEND_VKCOM)
             initVkComBackend();
+        else if (preferableBackend == DNN_BACKEND_WGPU)
+            initWGPUBackend();
         else if (preferableBackend == DNN_BACKEND_CUDA)
             initCUDABackend();
         else
@@ -2353,6 +2381,40 @@ struct Net::Impl : public detail::NetImplBase
             {
                 CV_LOG_ERROR(NULL, "initVkCom failed, fallback to CPU implementation. " << e.what());
                 ld.backendNodes[DNN_BACKEND_VKCOM] = Ptr<BackendNode>();
+            }
+        }
+#endif
+    }
+
+    void initWGPUBackend()
+    {
+        CV_TRACE_FUNCTION();
+        CV_Assert(preferableBackend == DNN_BACKEND_WGPU);
+#ifdef HAVE_WEBGPU
+    if (!haveWGPU())
+        return;
+    
+        MapIdToLayerData::iterator it = layers.begin();
+        for (; it != layers.end(); it++)
+        {
+            LayerData &ld = it->second;
+            Ptr<Layer> layer = ld.layerInstance;
+            if (!layer->supportBackend(preferableBackend))
+            {
+                continue;
+            }
+
+            ld.skip = false;
+
+            try
+            {
+                ld.backendNodes[DNN_BACKEND_WGPU] =
+                    layer->initWGPU(ld.inputBlobsWrappers);
+            }
+            catch (const cv::Exception& e)
+            {
+                CV_LOG_ERROR(NULL, "initWGPU failed, fallback to CPU implementation. " << e.what());
+                ld.backendNodes[DNN_BACKEND_WGPU] = Ptr<BackendNode>();
             }
         }
 #endif
@@ -3141,6 +3203,19 @@ struct Net::Impl : public detail::NetImplBase
                     catch (const cv::Exception& e)
                     {
                         CV_LOG_ERROR(NULL, "forwardVkCom failed, fallback to CPU implementation. " << e.what());
+                        it->second = Ptr<BackendNode>();
+                        forwardLayer(ld);
+                    }
+                }
+                else if (preferableBackend == DNN_BACKEND_WGPU)
+                {
+                    try
+                    {
+                        forwardWGPU(ld.outputBlobsWrappers, node);
+                    }
+                    catch (const cv::Exception& e)
+                    {
+                        CV_LOG_ERROR(NULL, "forwardWGPU failed, fallback to CPU implementation. " << e.what());
                         it->second = Ptr<BackendNode>();
                         forwardLayer(ld);
                     }
@@ -4739,6 +4814,13 @@ Ptr<BackendNode> Layer::initCUDA(
 Ptr<BackendNode> Layer::initVkCom(const std::vector<Ptr<BackendWrapper> > &)
 {
     CV_Error(Error::StsNotImplemented, "VkCom pipeline of " + type +
+                                       " layers is not defined.");
+    return Ptr<BackendNode>();
+}
+
+Ptr<BackendNode> Layer::initWGPU(const std::vector<Ptr<BackendWrapper> >& )
+{
+    CV_Error(Error::StsNotImplemented, "WebGPU pipeline of " + type +
                                        " layers is not defined.");
     return Ptr<BackendNode>();
 }
