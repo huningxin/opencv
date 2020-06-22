@@ -117,17 +117,8 @@ wgpu::FenceCompletionStatus OpBase::WaitForCompletedValue(wgpu::Fence fence, uin
 }
 
 void OpBase::runCommandBuffer() {
-    wgpu::FenceDescriptor descriptor;
-    descriptor.initialValue = 1u;
-    wgpu::Fence fence = wQueue->CreateFence(&descriptor);
     cv::AutoLock lock(wContextMtx);
     wQueue->Submit(1, &cmd_buffer_);
-    wQueue->Signal(fence, 1);
-    if(WaitForCompletedValue(fence, 1u) == wgpu::FenceCompletionStatus::Error ) {
-            CV_Error(Error::StsError, "WGPU Fence Failed "); 
-    }
-    // queue submit succeed
-    fence.Release();
 }
 
 // #endif //HAVE_WEBGPU
