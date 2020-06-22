@@ -38,7 +38,11 @@ void OpBase::createBindGroupLayout(int buffer_num) {
         entriesInitializer.push_back(entry);
     }
     if(needsUniform) {
-        entriesInitializer.push_back({buffer_num, wgpu::ShaderStage::Compute, wgpu::BindingType::UniformBuffer});
+        wgpu::BindGroupLayoutEntry entry = {};
+        entry.binding = buffer_num;
+        entry.visibility = wgpu::ShaderStage::Compute;
+        entry.type = wgpu::BindingType::UniformBuffer;
+        entriesInitializer.push_back(entry);
     }
     bindgrouplayout_ = MakeBindGroupLayout(*device_, entriesInitializer);
 }
@@ -52,7 +56,7 @@ void OpBase::createBindGroup()
     bindgroup_ = device_->CreateBindGroup(&bgDesc);
 }
 
-void OpBase::createShaderModule(const uint32_t* spv, const std::string& source = std::string()) {
+void OpBase::createShaderModule(const uint32_t* spv, const std::string& source) {
     wgpu::ShaderModuleSPIRVDescriptor spirvDesc;
     if(spv) {
         spirvDesc.sType = wgpu::SType::ShaderModuleSPIRVDescriptor;
