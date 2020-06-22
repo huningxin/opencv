@@ -35,7 +35,7 @@ webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr)
 std::vector<webgpu::Tensor>  WGPUTensors(const std::vector<Ptr<BackendWrapper> >& ptrs) {
     std::vector<webgpu::Tensor> vec;
     vec.reserve(ptrs.size());
-    for(const Ptr<WGPUBackendWrapper>& ptr : ptrs) {
+    for(const Ptr<BackendWrapper>& ptr : ptrs) {
         vec.push_back(WGPUTensor(ptr));
     }
     return vec;
