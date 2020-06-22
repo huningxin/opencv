@@ -10,12 +10,13 @@
 
 #include "../../precomp.hpp"
 #include "wgpucom.hpp"
-#include"../dawn/dawnUtils.hpp"
+#include "../dawn/dawnUtils.hpp"
+#include "tensor.hpp"
 
 namespace cv { namespace dnn { namespace webgpu {
 // #ifdef HAVE_WEBGPU
 class Context;
-
+class Tensor;
 class OpBase{
 public:
     OpBase();

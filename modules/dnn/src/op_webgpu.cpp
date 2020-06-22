@@ -26,7 +26,7 @@ void copyToMat(Mat &dst, webgpu::Tensor &src)
     src.unMap();
 }
 
-    webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr)
+webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr)
 {
     CV_Assert(!ptr.empty());
     return ptr.dynamicCast<WGPUBackendWrapper>()->getTensor();
@@ -35,7 +35,7 @@ void copyToMat(Mat &dst, webgpu::Tensor &src)
 std::vector<webgpu::Tensor>  WGPUTensors(const std::vector<Ptr<BackendWrapper> >& ptrs) {
     std::vector<webgpu::Tensor> vec;
     vec.reserve(ptrs.size());
-    for(const Ptr<WGPUBackendWrapper> ptr:ptrs) {
+    for(const Ptr<WGPUBackendWrapper>& ptr : ptrs) {
         vec.push_back(WGPUTensor(ptr));
     }
     return vec;
@@ -93,8 +93,7 @@ webgpu::Tensor WGPUBackendWrapper::getTensor() {
 
 WGPUBackendNode::WGPUBackendNode(const std::vector<Ptr<BackendWrapper> >& inputsWrapper,
                         const std::shared_ptr<webgpu::OpBase> &op,
-                        const std::vector<Ptr<BackendWrapper> >& blobsWrapper =
-                        std::vector<Ptr<BackendWrapper> >())
+                        const std::vector<Ptr<BackendWrapper> >& blobsWrapper)
                         :BackendNode(DNN_BACKEND_WGPU)
 {
     operation = op;

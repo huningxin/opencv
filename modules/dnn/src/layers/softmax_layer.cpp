@@ -334,7 +334,6 @@ public:
         return Ptr<BackendNode>();
     }
 
-
     virtual Ptr<BackendNode> initHalide(const std::vector<Ptr<BackendWrapper> > &inputs) CV_OVERRIDE
     {
 #ifdef HAVE_HALIDE

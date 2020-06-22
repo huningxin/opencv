@@ -11,11 +11,12 @@
 #include <iomanip>
 #include <mutex>
 #include <sstream>
+#include <memory>
 namespace cv { namespace dnn { namespace webgpu {
 
 // #ifdef HAVE_WEBGPU
 
-static std::unique_ptr<dawn_native::Instance> instance;
+static dawn_native::Instance* instance;
 static wgpu::BackendType backendType = wgpu::BackendType::Vulkan;
 
 void PrintDeviceError(WGPUErrorType errorType,  const char* message, void*) {
@@ -41,7 +42,7 @@ void PrintDeviceError(WGPUErrorType errorType,  const char* message, void*) {
 }
 
 wgpu::Device createCppDawnDevice() {
-    instance = std::make_unique<dawn_native::Instance>();
+    instance = new dawn_native::Instance();
     instance->DiscoverDefaultAdapters();
     // Get an adapter for the backend to use, and create the device.
     dawn_native::Adapter backendAdapter;
@@ -107,52 +108,6 @@ wgpu::BindGroupLayout MakeBindGroupLayout(
     descriptor.entryCount = static_cast<uint32_t>(entriesInitializer.size());
     descriptor.entries = entriesInitializer.data();
     return device.CreateBindGroupLayout(&descriptor);
-}
-
-wgpu::BindGroup MakeBindGroup(
-    const wgpu::Device& device,
-    const wgpu::BindGroupLayout& layout,
-    std::vector<BindingInitializationHelper> entriesInitializer) {
-    std::vector<wgpu::BindGroupEntry> entries;
-    for (const BindingInitializationHelper& helper : entriesInitializer) {
-        entries.push_back(helper.GetAsBinding());
-    }
-
-    wgpu::BindGroupDescriptor descriptor;
-    descriptor.layout = layout;
-    descriptor.entryCount = entries.size();
-    descriptor.entries = entries.data();
-
-    return device.CreateBindGroup(&descriptor);
-}
-
-BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
-                                                            const wgpu::Sampler& sampler)
-    : binding(binding), sampler(sampler) {}
-
-BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
-                                                            const wgpu::TextureView& textureView)
-    : binding(binding), textureView(textureView) {
-}
-
-BindingInitializationHelper::BindingInitializationHelper(uint32_t binding,
-                                                            const wgpu::Buffer& buffer,
-                                                            uint64_t offset,
-                                                            uint64_t size)
-    : binding(binding), buffer(buffer), offset(offset), size(size) {
-}
-
-wgpu::BindGroupEntry BindingInitializationHelper::GetAsBinding() const {
-    wgpu::BindGroupEntry result;
-
-    result.binding = binding;
-    result.sampler = sampler;
-    result.textureView = textureView;
-    result.buffer = buffer;
-    result.offset = offset;
-    result.size = size;
-
-    return result;
 }
 
 // #endif  //HAVE_WEBGPU

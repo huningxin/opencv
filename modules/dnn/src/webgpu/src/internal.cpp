@@ -46,14 +46,13 @@ std::vector<uint32_t> compile(const std::string& name,
 void bindTensor(Tensor& tensor, uint32_t binding, std::vector<wgpu::BindGroupEntry>& bgEntries) 
 {
     wgpu::Buffer* buffer =  tensor.getBuffer()->getWebGPUBuffer();
-    wgpu::BindGroupEntry bgEntry = {
-        binding,
-        *buffer,
-        0,
-        static_cast<uint64_t>(sizeof(*buffer)),
-        nullptr,
-        nullptr
-    };
+    wgpu::BindGroupEntry bgEntry = {};
+    bgEntry.binding = binding;
+    bgEntry.buffer = *buffer;
+    bgEntry.offset = 0;
+    bgEntry.size = static_cast<uint64_t>(sizeof(* buffer));
+    bgEntry.sampler = nullptr;
+    bgEntry.textureView = nullptr;
     bgEntries.push_back(bgEntry);
 }
 

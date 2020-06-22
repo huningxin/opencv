@@ -31,7 +31,11 @@ void OpBase::createBindGroupLayout(int buffer_num) {
         return;
     std::vector<wgpu::BindGroupLayoutEntry> entriesInitializer;
     for(int i = 0; i < buffer_num ; i++) {
-        entriesInitializer.push_back({i, wgpu::ShaderStage::Compute, wgpu::BindingType::StorageBuffer});
+        wgpu::BindGroupLayoutEntry entry = {};
+        entry.binding = i;
+        entry.visibility = wgpu::ShaderStage::Compute;
+        entry.type = wgpu::BindingType::StorageBuffer;
+        entriesInitializer.push_back(entry);
     }
     if(needsUniform) {
         entriesInitializer.push_back({buffer_num, wgpu::ShaderStage::Compute, wgpu::BindingType::UniformBuffer});

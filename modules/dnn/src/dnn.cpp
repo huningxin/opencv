@@ -4251,6 +4251,7 @@ string Net::Impl::dump()
         case DNN_BACKEND_INFERENCE_ENGINE_NGRAPH: backend = "NGRAPH/"; break;
         case DNN_BACKEND_OPENCV: backend = "OCV/"; break;
         case DNN_BACKEND_VKCOM: backend = "VULKAN/"; break;
+        case DNN_BACKEND_WGPU: backend = "WGPU/"; break;
         case DNN_BACKEND_CUDA: backend = "CUDA/"; break;
         // don't use default:
     }

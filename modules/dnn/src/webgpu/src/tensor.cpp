@@ -8,13 +8,14 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
     createContext();
     device_ = wDevice;
 }
-Tensor::Tensor(const char* data, Format fmt = wFormatInt32) {
+
+Tensor::Tensor(const char* data, Format fmt) {
     createContext();
     device_ = wDevice;
     setUniform(data,fmt);
 }
 
-Tensor::Tensor(const char* data, std::vector<int>& shape, Format fmt = wFormatFp32) {
+Tensor::Tensor(const char* data, std::vector<int>& shape, Format fmt) {
     createContext();
     device_ = wDevice;
     reshape(data, shape);
