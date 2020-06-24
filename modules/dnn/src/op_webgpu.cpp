@@ -114,7 +114,7 @@ bool WGPUBackendNode::forward(std::vector<webgpu::Tensor>& outs) {
 
 // #endif  //HAVE_WEBGPU
 
-void setDirty(std::vector<Ptr<BackendWrapper> >& ptrs)
+void setBackendWrappersDirty(std::vector<Ptr<BackendWrapper> >& ptrs)
 {
     for (const Ptr<BackendWrapper>& ptr : ptrs)
     {
@@ -129,7 +129,7 @@ void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, const Ptr<BackendNo
     Ptr<WGPUBackendNode> node_ = node.dynamicCast<WGPUBackendNode>();
     std::vector<webgpu::Tensor> outs = WGPUTensors(outputs);
     node_->forward(outs);
-    setDirty(outputs);
+    setBackendWrappersDirty(outputs);
     
 // #endif
 }
