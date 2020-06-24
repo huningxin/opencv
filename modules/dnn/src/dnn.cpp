@@ -4240,7 +4240,7 @@ string Net::Impl::dump()
             prevNode = itBackend->second;
         }
     }
-    string colors[] = {"#ffffb3", "#fccde5", "#8dd3c7", "#bebada", "#80b1d3", "#fdb462", "#ff4848", "#b35151"};
+    string colors[] = {"#ffffb3", "#fccde5", "#8dd3c7", "#bebada", "#80b1d3", "#fdb462", "#ff4848", "#b35151", "#b3e4ff"};
     string backend;
     switch (prefBackend)
     {
@@ -4252,6 +4252,7 @@ string Net::Impl::dump()
         case DNN_BACKEND_OPENCV: backend = "OCV/"; break;
         case DNN_BACKEND_VKCOM: backend = "VULKAN/"; break;
         case DNN_BACKEND_CUDA: backend = "CUDA/"; break;
+        case DNN_BACKEND_WGPU: backend = "WEBGPU/"; break;
         // don't use default:
     }
     out << "digraph G {\n";
@@ -4389,6 +4390,7 @@ string Net::Impl::dump()
             case DNN_TARGET_FPGA: out << "FPGA"; colorId = 4; break;
             case DNN_TARGET_CUDA: out << "CUDA"; colorId = 5; break;
             case DNN_TARGET_CUDA_FP16: out << "CUDA_FP16"; colorId = 6; break;
+            case DNN_TARGET_WGPU: out<< "WEBGPU"; colorId = 8; break;
             // don't use default:
         }
         out << "\\n";  // align center
