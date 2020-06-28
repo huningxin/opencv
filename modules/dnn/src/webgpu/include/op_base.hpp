@@ -28,7 +28,7 @@ public:
 protected:
     void createBindGroupLayout(int buffer_num);
     void createBindGroup();
-    void createShaderModule(const uint32_t* spv, const std::string& source = std::string());
+    void createShaderModule(const uint32_t* spv, uint32_t size, const std::string& source = std::string());
     void createComputePipeline();
     void createCommandBuffer();
     void runCommandBuffer();
@@ -43,7 +43,7 @@ protected:
     wgpu::PipelineLayout pipeline_layout_;
     std::vector<wgpu::BindGroupEntry> bgEntries;
 
-    bool needsUniform = false;
+    bool needsUniform = true;
     uint32_t group_x_;
     uint32_t group_y_;
     uint32_t group_z_;

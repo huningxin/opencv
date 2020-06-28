@@ -12,6 +12,7 @@
 #include <mutex>
 #include <sstream>
 #include <memory>
+#include <iostream>
 namespace cv { namespace dnn { namespace webgpu {
 
 // #ifdef HAVE_WEBGPU
@@ -84,7 +85,7 @@ wgpu::CreateBufferMappedResult CreateBufferMappedFromData(const wgpu::Device& de
     descriptor.size = size;
     descriptor.usage = usage | wgpu::BufferUsage::CopyDst;
     wgpu::CreateBufferMappedResult result = device.CreateBufferMapped(&descriptor);
-    memcpy(result.data, data, size);
+    if(data) { memcpy(result.data, data, size); }
     return result;
 }
 

@@ -44,7 +44,10 @@ void OpBase::createBindGroupLayout(int buffer_num) {
         entry.type = wgpu::BindingType::UniformBuffer;
         entriesInitializer.push_back(entry);
     }
-    bindgrouplayout_ = MakeBindGroupLayout(*device_, entriesInitializer);
+    wgpu::BindGroupLayoutDescriptor descriptor;
+    descriptor.entryCount = static_cast<uint32_t>(entriesInitializer.size());
+    descriptor.entries = entriesInitializer.data();
+    bindgrouplayout_ = device_->CreateBindGroupLayout(&descriptor);
 }
 
 void OpBase::createBindGroup()
@@ -56,30 +59,32 @@ void OpBase::createBindGroup()
     bindgroup_ = device_->CreateBindGroup(&bgDesc);
 }
 
-void OpBase::createShaderModule(const uint32_t* spv, const std::string& source) {
+void OpBase::createShaderModule(const uint32_t* spv, uint32_t size,  const std::string& source) {
     wgpu::ShaderModuleSPIRVDescriptor spirvDesc;
     if(spv) {
         spirvDesc.sType = wgpu::SType::ShaderModuleSPIRVDescriptor;
-        spirvDesc.codeSize =static_cast<uint32_t>(sizeof(spv) / sizeof(uint32_t));
+        spirvDesc.codeSize = size;
         spirvDesc.code = spv;
     }
-    //TODO: dynamically compile glsl
-    else {
-        std::vector<uint32_t> code;
-        code = compile("shader", shaderc_compute_shader, source);
-        spirvDesc.codeSize =static_cast<uint32_t>(code.size());
-        spirvDesc.code = code.data();
-    }
+    // TODO: dynamically compile glsl
+    // else {
+    //     std::vector<uint32_t> code;
+    //     code = compile("shader", shaderc_compute_shader, source);
+    //     spirvDesc.codeSize =static_cast<uint32_t>(code.size());
+    //     spirvDesc.code = code.data();
+    // }
     wgpu::ShaderModuleDescriptor descriptor;
     descriptor.label = nullptr;
     descriptor.nextInChain = &spirvDesc;
-
     module_ = device_->CreateShaderModule(&descriptor);
 }
 
 void OpBase::createComputePipeline() 
 {
-    pipeline_layout_ = MakeBasicPipelineLayout(*device_, &bindgrouplayout_);
+    wgpu::PipelineLayoutDescriptor descriptor;
+    descriptor.bindGroupLayoutCount = 1;
+    descriptor.bindGroupLayouts = &bindgrouplayout_;
+    pipeline_layout_ = device_->CreatePipelineLayout(&descriptor);
 
     wgpu::ComputePipelineDescriptor csDesc;
     csDesc.layout = pipeline_layout_;

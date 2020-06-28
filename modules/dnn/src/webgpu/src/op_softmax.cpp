@@ -23,6 +23,7 @@ OpSoftmax::OpSoftmax(const int axis, const bool log_softmax)
     init(axis, log_softmax);
     type_ = "Softmax";
     needsUniform = true;
+    std::cout<<"OpSoftmax::OpSoftmax"<<std::endl;
 }
 
 OpSoftmax::~OpSoftmax()
@@ -31,6 +32,7 @@ OpSoftmax::~OpSoftmax()
         delete max_tensor_;
     if (sum_tensor_)
         delete sum_tensor_;
+    std::cout<<"OpSoftmax::~OpSoftmax"<<std::endl;
 }
 
 void OpSoftmax::reshapeOutTensor(Tensor& in, Tensor& out)
@@ -56,6 +58,12 @@ bool OpSoftmax::forward(std::vector<Tensor>& ins,
     return forward(ins[0], outs[0]);
 }
 
+void OpSoftmax::setBlobs(std::vector<char *>& blobs, std::vector<int> shape)
+{
+    max_tensor_ = new Tensor(blobs[0], shape, wgpu::BufferUsage::Storage);
+    sum_tensor_ = new Tensor(blobs[1], shape, wgpu::BufferUsage::Storage);
+}
+
 bool OpSoftmax::forward(Tensor& in, Tensor& out)
 {
     channels_ = in.dimSize(axis_);
@@ -70,23 +78,26 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
         config_.block_height = 1;
         config_.block_width  = 1;
         config_.block_depth  = 1;
-        createShaderModule(softmax_spv);
+        createShaderModule(softmax_spv, sizeof(softmax_spv)/sizeof(uint32_t));
         createComputePipeline();
         computeGroupCount();
     }
-
     if (max_tensor_ == NULL || sum_tensor_ == NULL)
     {
         std::vector<int> shape = {outer_size_, channel_size_};
-        max_tensor_ = new Tensor(NULL, shape);
-        sum_tensor_ = new Tensor(NULL, shape);
+        max_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage);
+        sum_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage);
     }
+    if(uniformTensor_ == NULL) 
+    {
+        SoftmaxParam param = {channel_size_, outer_size_, channels_, log_softmax_ == true ? 1 : 0};
+        uniformTensor_ = new Tensor((const char*) &param, sizeof(SoftmaxParam), wgpu::BufferUsage::Uniform, wFormatInt32);
+    }
+    
     bindTensor( in,  0, bgEntries);
     bindTensor( *max_tensor_,  1, bgEntries);
     bindTensor( *sum_tensor_,  2, bgEntries);
     bindTensor( out, 3, bgEntries);
-    SoftmaxParam param = {channel_size_, outer_size_, channels_, log_softmax_ == true ? 1 : 0};
-    uniformTensor_ = new Tensor((const char*) &param, wFormatInt32);
     bindTensor( *uniformTensor_, 4, bgEntries);
     createBindGroup();
     createCommandBuffer();

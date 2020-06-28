@@ -12,8 +12,8 @@ class Buffer;
 class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
-    Tensor(const char* data, Format fmt = wFormatInt32);  //uniform buffer
-    Tensor(const char* data, std::vector<int>& shape, Format fmt = wFormatFp32);
+    Tensor(const char* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt = wFormatFp32);  //uniform buffer
+    Tensor(const char* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt = wFormatFp32);
     void* map();
     void unMap();
     Shape getShape() const;
@@ -35,7 +35,8 @@ private:
     std::vector<int> shape_;
     size_t size_in_byte_;
     std::shared_ptr<Buffer> buffer_;
-    Format format_;
+    Format format_ = Format::wFormatFp32;
+    wgpu::BufferUsage usage_;
 };
 
 // #endif  //HAVE_WEBGPU

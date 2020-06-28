@@ -8,16 +8,15 @@ namespace cv { namespace dnn { namespace webgpu {
 // #ifdef HAVE_WEBGPU
 
 std::shared_ptr<Context> wCtx;
-std::shared_ptr<Context> wContext;
-std::shared_ptr<wgpu::Device> wDevice = nullptr;
-std::shared_ptr<wgpu::Queue> wQueue = nullptr;
+std::shared_ptr<wgpu::Device> wDevice;
+std::shared_ptr<wgpu::Queue> wQueue;
 cv::Mutex wContextMtx;
 
 // internally used
 void createContext()
 {
     cv::AutoLock lock(wContextMtx);
-    if (!wCtx)
+    if (!wCtx && !wDevice)
     {
         wCtx.reset(new Context());
     }

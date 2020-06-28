@@ -1,6 +1,6 @@
 #include "../include/buffer.hpp"
 #include "../dawn/dawnUtils.hpp"
-
+#include <string.h>
 namespace cv { namespace dnn { namespace webgpu {
 // #ifdef HAVE_WEBGPU
 
@@ -12,18 +12,19 @@ Buffer::Buffer(std::shared_ptr<wgpu::Device> device){
     bufferMapped_->data = nullptr;
 }
 
-Buffer::Buffer(std::shared_ptr<wgpu::Device> device, const void* data, size_t size, wgpu::BufferUsage usage) {
+Buffer::Buffer( std::shared_ptr<wgpu::Device> device, 
+                const void* data, size_t size, 
+                wgpu::BufferUsage usage) 
+{
     device_ = device;
     usage_ = usage;
-    bufferMapped_ = std::make_shared<wgpu::CreateBufferMappedResult>(CreateBufferMappedFromData(* device_, data, size, usage_));
+    wgpu::BufferDescriptor descriptor = {};
+    descriptor.size = size;
+    descriptor.usage = usage;
+    bufferMapped_ = std::make_shared<wgpu::CreateBufferMappedResult>
+                    (device_->CreateBufferMapped(&descriptor));
+    if(data) { memcpy(bufferMapped_->data, data, size); }
 }
-
-//steSubdata which is used in tfjs
-// Buffer::Buffer(const wgpu::Device& device, const void* data, size_t size, wgpu::BufferUsage usage) {
-//     device_ = device;
-//     usage_ = usage | wgpu::BufferUsage::CopyDst;
-//     buffer_ = CreateBufferFromData(device_, data, size, usage_);
-// }
 
 // #endif  //HAVE_WEBGPU
 

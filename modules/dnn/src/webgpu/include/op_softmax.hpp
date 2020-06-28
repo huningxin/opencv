@@ -22,6 +22,7 @@ public:
     OpSoftmax(const int axis, const bool log_softmax = false);
     ~OpSoftmax();
     void reshapeOutTensor(Tensor& in, Tensor& out);
+    void setBlobs(std::vector<char *>& blobs, std::vector<int> shape);
     bool forward(Tensor& in, Tensor& out);
     virtual bool forward(std::vector<Tensor>& ins,
                          std::vector<Tensor>& blobs,
@@ -36,9 +37,9 @@ private:
     int outer_size_;
     bool log_softmax_;
     SoftmaxShaderConfig config_;
-    Tensor* max_tensor_;
-    Tensor* sum_tensor_;
-    Tensor* uniformTensor_;
+    Tensor* max_tensor_ = nullptr;
+    Tensor* sum_tensor_ = nullptr;
+    Tensor* uniformTensor_ = nullptr;
 };
 
 // #endif // HAVE_WEBGPU

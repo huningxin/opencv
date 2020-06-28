@@ -9,13 +9,17 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
     device_ = wDevice;
 }
 
-Tensor::Tensor(const char* data, Format fmt) {
+Tensor::Tensor(const char* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt)
+: size_in_byte_(size_in_byte),usage_(usage), format_(fmt)
+{
     createContext();
     device_ = wDevice;
-    setUniform(data,fmt);
+    setUniform(data, fmt);
 }
 
-Tensor::Tensor(const char* data, std::vector<int>& shape, Format fmt) {
+Tensor::Tensor(const char* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt) 
+: size_in_byte_(0), usage_(usage), format_(fmt)
+{
     createContext();
     device_ = wDevice;
     reshape(data, shape);
@@ -61,7 +65,6 @@ Tensor Tensor::reshape(const void* data, const std::vector<int>& shape, bool all
         CV_Error(Error::StsError, "device is NULL");
         return *this;
     }
-
     CV_Assert(shape.size() > 0 && shape.size() <= 6);
 
     if (shape_ != shape) shape_ = shape;
@@ -71,17 +74,15 @@ Tensor Tensor::reshape(const void* data, const std::vector<int>& shape, bool all
     if (alloc || new_size > size_in_byte_)
         alloc = true;
     size_in_byte_ = new_size;
-
-    if (alloc)
+    if (alloc || !buffer_)
     {
         // TODO: specific data type 
-        buffer_.reset(new Buffer(device_, data, size_in_byte_, buffer_->getBufferUsage()));
+        buffer_.reset(new Buffer(device_, data, size_in_byte_, usage_));
     }
     else if (data)
     {
         memcpy(buffer_->getBufferMapped()->data, data, size_in_byte_);
     }
-
     return *this;
 }
 
@@ -93,8 +94,15 @@ Tensor Tensor::setUniform(const void * data, Format fmt)
         return *this;
     }
     if (checkFormat(fmt) && fmt != format_) format_ = fmt;
-    size_in_byte_ = sizeof(data);
-    memcpy(buffer_->getBufferMapped()->data, data, size_in_byte_);
+    if (!buffer_)
+    {
+        // TODO: specific data type 
+        buffer_.reset(new Buffer(device_, data, size_in_byte_, usage_));
+    }
+    else if (data)
+    {
+        memcpy(buffer_->getBufferMapped()->data, data, size_in_byte_);
+    }
     return *this;
 }
 
