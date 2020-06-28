@@ -10,18 +10,22 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
 }
 
 Tensor::Tensor(const char* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt)
-: size_in_byte_(size_in_byte),usage_(usage), format_(fmt)
 {
     createContext();
     device_ = wDevice;
+    size_in_byte_ = size_in_byte;
+    usage_ = usage;
+    format_ = fmt;
     setUniform(data, fmt);
 }
 
 Tensor::Tensor(const char* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt) 
-: size_in_byte_(0), usage_(usage), format_(fmt)
 {
     createContext();
     device_ = wDevice;
+    size_in_byte_ = 0;
+    usage_ = usage;
+    format_ = fmt;
     reshape(data, shape);
 }
 

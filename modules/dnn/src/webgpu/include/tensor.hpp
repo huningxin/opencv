@@ -35,7 +35,7 @@ private:
     std::vector<int> shape_;
     size_t size_in_byte_;
     std::shared_ptr<Buffer> buffer_;
-    Format format_ = Format::wFormatFp32;
+    Format format_;
     wgpu::BufferUsage usage_;
 };
 
