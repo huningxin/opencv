@@ -11,7 +11,7 @@
 
 namespace cv { namespace dnn { namespace webgpu {
 
-extern const unsigned int softmax_spv[1504];
+extern const unsigned int softmax_spv[1500];
 
 }}} // namespace cv::dnn::webgpu
 

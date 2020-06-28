@@ -39,6 +39,7 @@ void PrintDeviceError(WGPUErrorType errorType,  const char* message, void*) {
             errorTypeName = "WGPUErrorTyp Unknown";
             return;
     }
+    errorTypeName += message;
     CV_Error(Error::StsError, errorTypeName);
 }
 

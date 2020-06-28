@@ -2,7 +2,7 @@
 #version 450
 #define LOCAL_SZ_X 256
 
-layout(binding = 0) readonly buffer buf0{
+layout(binding = 0) buffer buf0{
     float input_buffer[]; // outer_size * channels * channel_size
 };
 layout(binding = 1) buffer buf1{

@@ -23,7 +23,6 @@ OpSoftmax::OpSoftmax(const int axis, const bool log_softmax)
     init(axis, log_softmax);
     type_ = "Softmax";
     needsUniform = true;
-    std::cout<<"OpSoftmax::OpSoftmax"<<std::endl;
 }
 
 OpSoftmax::~OpSoftmax()
@@ -32,7 +31,6 @@ OpSoftmax::~OpSoftmax()
         delete max_tensor_;
     if (sum_tensor_)
         delete sum_tensor_;
-    std::cout<<"OpSoftmax::~OpSoftmax"<<std::endl;
 }
 
 void OpSoftmax::reshapeOutTensor(Tensor& in, Tensor& out)
@@ -99,6 +97,11 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
     bindTensor( *sum_tensor_,  2, bgEntries);
     bindTensor( out, 3, bgEntries);
     bindTensor( *uniformTensor_, 4, bgEntries);
+    in.unMap(); 
+    max_tensor_->unMap();
+    sum_tensor_->unMap();
+    out.unMap();
+    uniformTensor_->unMap();
     createBindGroup();
     createCommandBuffer();
     runCommandBuffer();
