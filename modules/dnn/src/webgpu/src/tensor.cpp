@@ -1,6 +1,7 @@
 #include "../include/tensor.hpp"
 #include "common.hpp"
 #include "internal.hpp"
+#include <unistd.h>
 namespace cv { namespace dnn { namespace webgpu {
 // #ifdef HAVE_WEBGPU
 Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
@@ -117,6 +118,30 @@ int Tensor::getFormat() const
 
 void Tensor::copyTo(Tensor & dst) {
     dst.reshape(buffer_->getBufferMapped()->data, shape_, true, format_);
+}
+
+void readBufferMapReadCallback(WGPUBufferMapAsyncStatus status,
+                                const void* ptr,
+                                uint64_t dataLength,
+                                void* userdata) {
+	(void)status;
+	(void)userdata;
+    if(dataLength == 0) {
+        CV_Error(cv::Error::StsAssert, "Result Buffer is NULL");
+    }
+    memcpy(userdata, ptr, dataLength);
+}
+
+void Tensor::mapReadAsync(void * result) {
+    wgpu::BufferDescriptor desc = {};
+    desc.size = size_in_byte_;
+    desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
+    wgpu::Buffer gpuReadBuffer = device_->CreateBuffer(& desc);
+    wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
+    encoder.CopyBufferToBuffer(* buffer_->getWebGPUBuffer(), 0, gpuReadBuffer, 0, size_in_byte_);
+    wgpu::CommandBuffer cmdBuffer = encoder.Finish();
+    wQueue->Submit(1, &cmdBuffer);
+    gpuReadBuffer.MapReadAsync(readBufferMapReadCallback, result);
 }
 
 // #endif   //HAVE_WEBGPU

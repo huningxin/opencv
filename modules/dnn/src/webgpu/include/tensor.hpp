@@ -30,6 +30,7 @@ public:
     bool isEmpty() { return size_in_byte_ == 0 ? true : false; }
     void copyTo(Tensor& dst);
     std::shared_ptr<Buffer> getBuffer() { return buffer_; }
+    void mapReadAsync(void* result);
 private:
     std::shared_ptr<wgpu::Device> device_;
     std::vector<int> shape_;
