@@ -5,8 +5,29 @@
 #include "../include/wgpucom.hpp"
 #include <unistd.h>
 #include "../src/common.hpp"
-
+#include <stdlib.h>
 using namespace cv::dnn;
+
+void readBufferMapReadCallback(WGPUBufferMapAsyncStatus status,
+                                const void* ptr,
+                                uint64_t dataLength,
+                                void* userdata) {
+	(void)status;
+	(void)userdata;
+    if(dataLength == 0) {
+        CV_Error(cv::Error::StsAssert, "Result Buffer is NULL");
+    }
+    memcpy(userdata, ptr, dataLength);
+    printf("resultMatrix: [");
+	size_t num = dataLength / sizeof(float);
+	for (size_t i = 0; i < num; ++i) {
+		printf("%f", ((const float*)ptr)[i]);
+		if (i != num - 1)
+			printf(", ");
+	}
+	printf("]\n");
+}
+
 int main(int argc, char** argv )
 {
     webgpu::wDevice = std::make_shared<wgpu::Device>(webgpu::createCppDawnDevice());
@@ -24,8 +45,22 @@ int main(int argc, char** argv )
     webgpu::OpSoftmax op1(1, false);
     op1.setBlobs(blobs, shape2);
     op1.forward(input, out);
-    void * result;
+    void * result = (void*) malloc(out.size());
     out.mapReadAsync(result);
+
+    for(int i = 0; i < 10; i ++) {
+        webgpu::wDevice->Tick();
+        usleep(100);
+    } 
+
+    printf("result: [");
+	size_t num = out.size() / sizeof(float);
+	for (size_t i = 0; i < num; ++i) {
+		printf("%f", ((const float*)result)[i]);
+		if (i != num - 1)
+			printf(", ");
+	}
+	printf("]\n");
+
     std::cout<<"Finish"<<std::endl;
-    return 0;
 }
