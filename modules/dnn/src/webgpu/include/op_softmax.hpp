@@ -22,7 +22,7 @@ public:
     OpSoftmax(const int axis, const bool log_softmax = false);
     ~OpSoftmax();
     void reshapeOutTensor(Tensor& in, Tensor& out);
-    void setBlobs(std::vector<char *>& blobs, std::vector<int> shape);
+    void setBlobs(std::vector<const void *>& blobs, std::vector<int> shape);
     bool forward(Tensor& in, Tensor& out);
     virtual bool forward(std::vector<Tensor>& ins,
                          std::vector<Tensor>& blobs,

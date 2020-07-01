@@ -19,11 +19,22 @@ public:
     std::shared_ptr<wgpu::CreateBufferMappedResult> getBufferMapped() {return bufferMapped_;}
     void* getBufferMappedData() {return bufferMapped_->data;}
     
+    static void BufferMapReadCallback(WGPUBufferMapAsyncStatus status,
+                                   const void* data,
+                                   uint64_t dataLength,
+                                   void* userdata)
+    {
+        static_cast<Buffer*>(userdata)->mappedData = data;
+    }
+    const void* MapReadAsyncAndWait(); 
+    
 private:
     Buffer();
     std::shared_ptr<wgpu::Device> device_;
     std::shared_ptr<wgpu::CreateBufferMappedResult>  bufferMapped_;
     wgpu::BufferUsage usage_;
+    size_t size_;
+    const void * mappedData = nullptr;
 };
 
 // #endif  //HAVE_WEBGPU

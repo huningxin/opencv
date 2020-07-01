@@ -10,7 +10,7 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
     device_ = wDevice;
 }
 
-Tensor::Tensor(const char* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt)
+Tensor::Tensor(const void* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt)
 {
     createContext();
     device_ = wDevice;
@@ -20,7 +20,7 @@ Tensor::Tensor(const char* data, size_t size_in_byte, wgpu::BufferUsage usage, F
     setUniform(data, fmt);
 }
 
-Tensor::Tensor(const char* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt) 
+Tensor::Tensor(const void* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt) 
 {
     createContext();
     device_ = wDevice;
@@ -130,18 +130,6 @@ void readBufferMapReadCallback(WGPUBufferMapAsyncStatus status,
         CV_Error(cv::Error::StsAssert, "Result Buffer is NULL");
     }
     memcpy(userdata, ptr, dataLength);
-}
-
-void Tensor::mapReadAsync(void * result) {
-    wgpu::BufferDescriptor desc = {};
-    desc.size = size_in_byte_;
-    desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
-    wgpu::Buffer gpuReadBuffer = device_->CreateBuffer(& desc);
-    wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
-    encoder.CopyBufferToBuffer(* buffer_->getWebGPUBuffer(), 0, gpuReadBuffer, 0, size_in_byte_);
-    wgpu::CommandBuffer cmdBuffer = encoder.Finish();
-    wQueue->Submit(1, &cmdBuffer);
-    gpuReadBuffer.MapReadAsync(readBufferMapReadCallback, result);
 }
 
 // #endif   //HAVE_WEBGPU

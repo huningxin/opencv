@@ -12,8 +12,8 @@ class Buffer;
 class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
-    Tensor(const char* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt = wFormatFp32);  //uniform buffer
-    Tensor(const char* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt = wFormatFp32);
+    Tensor(const void* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt = wFormatFp32);  //uniform buffer
+    Tensor(const void* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt = wFormatFp32);
     void* map();
     void unMap();
     Shape getShape() const;
@@ -30,7 +30,6 @@ public:
     bool isEmpty() { return size_in_byte_ == 0 ? true : false; }
     void copyTo(Tensor& dst);
     std::shared_ptr<Buffer> getBuffer() { return buffer_; }
-    void mapReadAsync(void* result);
 private:
     std::shared_ptr<wgpu::Device> device_;
     std::vector<int> shape_;

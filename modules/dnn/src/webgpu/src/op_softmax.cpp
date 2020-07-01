@@ -56,7 +56,7 @@ bool OpSoftmax::forward(std::vector<Tensor>& ins,
     return forward(ins[0], outs[0]);
 }
 
-void OpSoftmax::setBlobs(std::vector<char *>& blobs, std::vector<int> shape)
+void OpSoftmax::setBlobs(std::vector<const void *>& blobs, std::vector<int> shape)
 {
     max_tensor_ = new Tensor(blobs[0], shape, wgpu::BufferUsage::Storage);
     sum_tensor_ = new Tensor(blobs[1], shape, wgpu::BufferUsage::Storage);
