@@ -28,11 +28,14 @@ public:
 protected:
     void createBindGroupLayout(int buffer_num);
     void createBindGroup();
-    void createShaderModule(const uint32_t* spv, uint32_t size, const std::string& source = std::string());
+    void createShaderModule(const uint32_t* spv, 
+                            uint32_t size, 
+                            const std::string& source = std::string());
     void createComputePipeline();
     void createCommandBuffer();
     void runCommandBuffer();
-    wgpu::FenceCompletionStatus WaitForCompletedValue(wgpu::Fence fence, uint64_t completedValue);
+    wgpu::FenceCompletionStatus WaitForCompletedValue(wgpu::Fence fence, 
+                                                uint64_t completedValue);
     
     std::shared_ptr<wgpu::Device> device_;
     wgpu::ComputePipeline pipeline_;

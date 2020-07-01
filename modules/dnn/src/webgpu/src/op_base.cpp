@@ -7,7 +7,8 @@
 
 namespace cv { namespace dnn { namespace webgpu {
 // #ifdef HAVE_WEBGPU
-OpBase::OpBase(){
+OpBase::OpBase()
+{
     createContext();
     device_ = wDevice;
     pipeline_ = nullptr;
@@ -18,15 +19,18 @@ OpBase::OpBase(){
     pipeline_layout_ = nullptr;
 }
 
-OpBase::~OpBase(){
+OpBase::~OpBase()
+{
     module_.Release();
     bindgrouplayout_.Release();
     bindgroup_.Release();
     pipeline_.Release();
     pipeline_layout_.Release();
 }
-// the wgpu::BindingType has to be specified  UniformBuffer | StorageBuffer | ReadOnlyStorageBuffer | MapReadBuffer
-void OpBase::createBindGroupLayout(int buffer_num) {
+// the wgpu::BindingType has to be specified  
+// UniformBuffer | StorageBuffer | ReadOnlyStorageBuffer | MapReadBuffer
+void OpBase::createBindGroupLayout(int buffer_num) 
+{
     if(buffer_num <= 0)
         return;
     std::vector<wgpu::BindGroupLayoutEntry> entriesInitializer;
@@ -45,7 +49,8 @@ void OpBase::createBindGroupLayout(int buffer_num) {
         entriesInitializer.push_back(entry);
     }
     wgpu::BindGroupLayoutDescriptor descriptor;
-    descriptor.entryCount = static_cast<uint32_t>(entriesInitializer.size());
+    descriptor.entryCount = 
+    static_cast<uint32_t>(entriesInitializer.size());
     descriptor.entries = entriesInitializer.data();
     bindgrouplayout_ = device_->CreateBindGroupLayout(&descriptor);
 }
@@ -59,7 +64,9 @@ void OpBase::createBindGroup()
     bindgroup_ = device_->CreateBindGroup(&bgDesc);
 }
 
-void OpBase::createShaderModule(const uint32_t* spv, uint32_t size,  const std::string& source) {
+void OpBase::createShaderModule(const uint32_t* spv, uint32_t size,  
+                                const std::string& source) 
+{
     wgpu::ShaderModuleSPIRVDescriptor spirvDesc;
     if(spv) {
         spirvDesc.sType = wgpu::SType::ShaderModuleSPIRVDescriptor;
@@ -106,7 +113,8 @@ void OpBase::createCommandBuffer()
     cmd_buffer_ = encoder.Finish(); 
 }
 
-wgpu::FenceCompletionStatus OpBase::WaitForCompletedValue(wgpu::Fence fence, uint64_t completedValue) 
+wgpu::FenceCompletionStatus OpBase::WaitForCompletedValue(
+    wgpu::Fence fence, uint64_t completedValue) 
 {
     if (fence.GetCompletedValue() < completedValue) 
     {

@@ -11,13 +11,17 @@ class Buffer {
 // #ifdef HAVE_WEBGPU
 public:
     Buffer(const std::shared_ptr<wgpu::Device> device);
-    Buffer(const std::shared_ptr<wgpu::Device> device, const void* data, size_t size, wgpu::BufferUsage usage = wgpu::BufferUsage::Storage);
+    Buffer( const std::shared_ptr<wgpu::Device> device, 
+            const void* data, size_t size, 
+            wgpu::BufferUsage usage = wgpu::BufferUsage::Storage);
 
     ~Buffer() {bufferMapped_->buffer.Release();}
-    wgpu::Buffer * getWebGPUBuffer() {return & bufferMapped_->buffer;}
-    wgpu::BufferUsage getBufferUsage() {return usage_;}
-    std::shared_ptr<wgpu::CreateBufferMappedResult> getBufferMapped() {return bufferMapped_;}
-    void* getBufferMappedData() {return bufferMapped_->data;}
+    wgpu::Buffer * getWebGPUBuffer() 
+    { return & bufferMapped_->buffer; }
+    wgpu::BufferUsage getBufferUsage() { return usage_;}
+    std::shared_ptr<wgpu::CreateBufferMappedResult> getBufferMapped()
+    { return bufferMapped_; }
+    void* getBufferMappedData() { return bufferMapped_->data; }
     
     static void BufferMapReadCallback(WGPUBufferMapAsyncStatus status,
                                    const void* data,

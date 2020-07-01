@@ -12,9 +12,13 @@ class Buffer;
 class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
-    Tensor(const void* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt = wFormatFp32);  //uniform buffer
-    Tensor(const void* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt = wFormatFp32);
-    void* map();
+    Tensor( const void* data, size_t size_in_byte, 
+            wgpu::BufferUsage usage, 
+            Format fmt = wFormatFp32);  //uniform buffer
+    Tensor( const void* data, std::vector<int>& shape, 
+            wgpu::BufferUsage usage, 
+            Format fmt = wFormatFp32);
+    const void* map();
     void unMap();
     Shape getShape() const;
     int dimSize(const int dim) const;
@@ -23,7 +27,9 @@ public:
     // Change shape and format to as passed in.
     // Copy data if data != NULL
     // Allocate new internal buffer if new size > old size or alloc flag is true
-    Tensor reshape(const void* data, const std::vector<int>& shape, bool alloc = false, Format fmt = wFormatInvalid);
+    Tensor reshape( const void* data, const std::vector<int>& shape, 
+                    bool alloc = false, 
+                    Format fmt = wFormatInvalid);
     Tensor setUniform(const void * data, Format fmt = wFormatInt32);
     int getFormat() const;
     size_t size() const { return size_in_byte_; }

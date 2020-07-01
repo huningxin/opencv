@@ -30,19 +30,20 @@ bool isAvailable()
     }
     catch (const cv::Exception& e)
     {
-        CV_LOG_ERROR(NULL, "Failed to init WebGPU-Dawn environment. " << e.what());
+        CV_LOG_ERROR(NULL, 
+        "Failed to init WebGPU-Dawn environment. " << e.what());
         return false;
     }
 
     return true;
 }
 Context::Context() {
-    //create wgpu::Device
+    // create wgpu::Device
     wDevice = std::make_shared<wgpu::Device>(createCppDawnDevice());
     wQueue = std::make_shared<wgpu::Queue>(wDevice->GetDefaultQueue());
 }
 Context::~Context() {
-    //how to release object
+    // how to release object
     wDevice->Release();
     wQueue->Release();
 }

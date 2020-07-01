@@ -12,7 +12,8 @@
 
 namespace cv { namespace dnn { namespace webgpu {
 //#ifndef HAVE_WEBGPU
-enum Format{
+enum Format
+{
     wFormatInvalid = -1,
     wFormatFp16,
     wFormatFp32,
@@ -20,7 +21,9 @@ enum Format{
     wFormatInt32,
     wFormatNum
 };
-enum OpType {
+
+enum OpType 
+{
     wOpTypeConv,
     wOpTypePool,
     wOpTypeDWConv,
@@ -32,8 +35,23 @@ enum OpType {
     wOpTypePermute,
     wOpTypeNum
 };
-enum PaddingMode { wPaddingModeSame, wPaddingModeValid, wPaddingModeCaffe, wPaddingModeNum };
-enum FusedActivationType { wNone, wRelu, wRelu1, wRelu6, wActivationNum };
+
+enum PaddingMode 
+{ 
+    wPaddingModeSame, 
+    wPaddingModeValid, 
+    wPaddingModeCaffe, 
+    wPaddingModeNum 
+};
+
+enum FusedActivationType 
+{ 
+    wNone, 
+    wRelu, 
+    wRelu1, 
+    wRelu6, 
+    wActivationNum 
+};
 
 typedef std::vector<int> Shape;
 bool isAvailable();

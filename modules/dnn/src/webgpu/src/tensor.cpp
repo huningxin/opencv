@@ -10,7 +10,8 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
     device_ = wDevice;
 }
 
-Tensor::Tensor(const void* data, size_t size_in_byte, wgpu::BufferUsage usage, Format fmt)
+Tensor::Tensor(const void* data, size_t size_in_byte, 
+                wgpu::BufferUsage usage, Format fmt)
 {
     createContext();
     device_ = wDevice;
@@ -20,7 +21,8 @@ Tensor::Tensor(const void* data, size_t size_in_byte, wgpu::BufferUsage usage, F
     setUniform(data, fmt);
 }
 
-Tensor::Tensor(const void* data, std::vector<int>& shape, wgpu::BufferUsage usage, Format fmt) 
+Tensor::Tensor(const void* data, std::vector<int>& shape, 
+                wgpu::BufferUsage usage, Format fmt) 
 {
     createContext();
     device_ = wDevice;
@@ -30,9 +32,9 @@ Tensor::Tensor(const void* data, std::vector<int>& shape, wgpu::BufferUsage usag
     reshape(data, shape);
 }
 
-void* Tensor::map()
+const void* Tensor::map()
 {
-    return buffer_->getBufferMappedData();
+    return buffer_->MapReadAsyncAndWait();
 
 }
 
@@ -63,7 +65,8 @@ int Tensor::dimNum() const
     return shape_.size();
 }
 
-Tensor Tensor::reshape(const void* data, const std::vector<int>& shape, bool alloc, Format fmt)
+Tensor Tensor::reshape(const void* data, const std::vector<int>& shape, 
+                        bool alloc, Format fmt)
 {
     if (device_ == nullptr)
     {
@@ -116,20 +119,9 @@ int Tensor::getFormat() const
     return format_;
 }
 
-void Tensor::copyTo(Tensor & dst) {
+void Tensor::copyTo(Tensor & dst) 
+{
     dst.reshape(buffer_->getBufferMapped()->data, shape_, true, format_);
-}
-
-void readBufferMapReadCallback(WGPUBufferMapAsyncStatus status,
-                                const void* ptr,
-                                uint64_t dataLength,
-                                void* userdata) {
-	(void)status;
-	(void)userdata;
-    if(dataLength == 0) {
-        CV_Error(cv::Error::StsAssert, "Result Buffer is NULL");
-    }
-    memcpy(userdata, ptr, dataLength);
 }
 
 // #endif   //HAVE_WEBGPU

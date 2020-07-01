@@ -5,7 +5,8 @@
 namespace cv { namespace dnn { namespace webgpu {
 // #ifdef HAVE_WEBGPU
 
-Buffer::Buffer(std::shared_ptr<wgpu::Device> device){
+Buffer::Buffer(std::shared_ptr<wgpu::Device> device)
+{
     device_ =  device;
     usage_ = wgpu::BufferUsage::Storage;
     bufferMapped_->buffer = nullptr;
@@ -35,7 +36,8 @@ const void* Buffer::MapReadAsyncAndWait()
     desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
     wgpu::Buffer gpuReadBuffer = device_->CreateBuffer(& desc);
     wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
-    encoder.CopyBufferToBuffer(bufferMapped_->buffer, 0, gpuReadBuffer, 0, size_);
+    encoder.CopyBufferToBuffer( bufferMapped_->buffer, 0, 
+                                gpuReadBuffer, 0, size_);
     wgpu::CommandBuffer cmdBuffer = encoder.Finish();
     wQueue->Submit(1, &cmdBuffer);
     gpuReadBuffer.MapReadAsync(BufferMapReadCallback, this);

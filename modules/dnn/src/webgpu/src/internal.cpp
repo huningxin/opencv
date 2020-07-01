@@ -13,37 +13,39 @@ namespace cv { namespace dnn { namespace webgpu {
 
 // #ifdef HAVE_WEBGPU
 
-std::vector<uint32_t> compile(const std::string& name,
-                              shaderc_shader_kind kind,
-                              const std::string& data)
-{
-    std::vector<uint32_t> result;
-#ifdef USE_SHADERC
-    shaderc::Compiler compiler;
-    shaderc::CompileOptions options;
+// std::vector<uint32_t> compile(const std::string& name,
+//                               shaderc_shader_kind kind,
+//                               const std::string& data)
+// {
+//     std::vector<uint32_t> result;
+// #ifdef USE_SHADERC
+//     shaderc::Compiler compiler;
+//     shaderc::CompileOptions options;
 
-    // Like -DMY_DEFINE=1
-    //options.AddMacroDefinition("MY_DEFINE", "1");
-    options.SetGenerateDebugInfo();
-    options.SetTargetEnvironment(shaderc_target_env_vulkan, shaderc_env_version_vulkan_1_1);
-    shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
-            data.c_str(), data.size(), kind, name.c_str(), options);
+//     // Like -DMY_DEFINE=1
+//     //options.AddMacroDefinition("MY_DEFINE", "1");
+//     options.SetGenerateDebugInfo();
+//     options.SetTargetEnvironment(shaderc_target_env_vulkan, 
+//                                  shaderc_env_version_vulkan_1_1);
+//     shaderc::SpvCompilationResult module = compiler.CompileGlslToSpv(
+//             data.c_str(), data.size(), kind, name.c_str(), options);
 
-    if (module.GetCompilationStatus() !=
-            shaderc_compilation_status_success) {
-        std::cerr << module.GetErrorMessage();
-    }
+//     if (module.GetCompilationStatus() !=
+//             shaderc_compilation_status_success) {
+//         std::cerr << module.GetErrorMessage();
+//     }
 
-    //std::vector<uint32_t> result(module.cbegin(), module.cend());
-    result.assign(module.cbegin(), module.cend());
-    return result;
-#else
-    assert(0);
-    return result;
-#endif
-}
+//     //std::vector<uint32_t> result(module.cbegin(), module.cend());
+//     result.assign(module.cbegin(), module.cend());
+//     return result;
+// #else
+//     assert(0);
+//     return result;
+// #endif
+// }
 
-void bindTensor(Tensor& tensor, uint32_t binding, std::vector<wgpu::BindGroupEntry>& bgEntries) 
+void bindTensor(Tensor& tensor, uint32_t binding, 
+                std::vector<wgpu::BindGroupEntry>& bgEntries) 
 {
     wgpu::BindGroupEntry bgEntry = {};
     bgEntry.binding = binding;

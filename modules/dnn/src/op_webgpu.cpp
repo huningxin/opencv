@@ -20,7 +20,7 @@ void copyToMat(Mat &dst, webgpu::Tensor &src)
     CV_Assert(dst.type() == CV_32F);
 
     std::vector<int> shape = src.getShape();
-    void *data = src.map();
+    void *data = const_cast<void *>(src.map() );
     Mat tmp(shape, CV_32F, data);
     tmp.copyTo(dst);
     src.unMap();
@@ -32,7 +32,8 @@ webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr)
     return ptr.dynamicCast<WGPUBackendWrapper>()->getTensor();
 }
 
-std::vector<webgpu::Tensor>  WGPUTensors(const std::vector<Ptr<BackendWrapper> >& ptrs) {
+std::vector<webgpu::Tensor>  WGPUTensors(const std::vector<Ptr<BackendWrapper> >& ptrs) 
+{
     std::vector<webgpu::Tensor> vec;
     vec.reserve(ptrs.size());
     for(const Ptr<BackendWrapper>& ptr : ptrs) {
@@ -41,7 +42,8 @@ std::vector<webgpu::Tensor>  WGPUTensors(const std::vector<Ptr<BackendWrapper> >
     return vec;
 }
 
-WGPUBackendWrapper::WGPUBackendWrapper(Mat& m) : BackendWrapper(DNN_BACKEND_WGPU, DNN_TARGET_WGPU)
+WGPUBackendWrapper::WGPUBackendWrapper(Mat& m) 
+: BackendWrapper(DNN_BACKEND_WGPU, DNN_TARGET_WGPU)
 {
     copyToTensor(tensor, m);
     host = &m;
@@ -63,7 +65,8 @@ WGPUBackendWrapper::WGPUBackendWrapper(const Ptr<BackendWrapper>& baseBuffer, Ma
     deviceDirty = false;
 }
 
-void WGPUBackendWrapper::copyToHost() {
+void WGPUBackendWrapper::copyToHost() 
+{
     if(deviceDirty)
     {
         copyToMat(*host, tensor);
@@ -71,7 +74,8 @@ void WGPUBackendWrapper::copyToHost() {
     }
 }
 
-void WGPUBackendWrapper::copyToDevice() {
+void WGPUBackendWrapper::copyToDevice() 
+{
     if(hostDirty)
     {
         copyToTensor(tensor, *host);
@@ -79,15 +83,18 @@ void WGPUBackendWrapper::copyToDevice() {
     }
 }
 
-void WGPUBackendWrapper::setHostDirty() {
+void WGPUBackendWrapper::setHostDirty() 
+{
     hostDirty = true;
 }
 
-void WGPUBackendWrapper::setDeviceDirty() {
+void WGPUBackendWrapper::setDeviceDirty() 
+{
     deviceDirty = true;
 }
 
-webgpu::Tensor WGPUBackendWrapper::getTensor() {
+webgpu::Tensor WGPUBackendWrapper::getTensor() 
+{
     return tensor;
 }
 
@@ -104,7 +111,8 @@ WGPUBackendNode::WGPUBackendNode(const std::vector<Ptr<BackendWrapper> >& inputs
     }
 }
 
-bool WGPUBackendNode::forward(std::vector<webgpu::Tensor>& outs) {
+bool WGPUBackendNode::forward(std::vector<webgpu::Tensor>& outs) 
+{
     for(int i = 0; i < inputsWrapper_.size(); i ++) {
         inputsWrapper_[i].dynamicCast<WGPUBackendWrapper>()->copyToDevice();
     }
@@ -122,7 +130,9 @@ void setBackendWrappersDirty(std::vector<Ptr<BackendWrapper> >& ptrs)
     }
 }
 
-void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, const Ptr<BackendNode>& node) {
+void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, 
+                const Ptr<BackendNode>& node) 
+{
 // #ifdef HAVE_WEBGPU
     CV_Assert(!node.empty());
 
