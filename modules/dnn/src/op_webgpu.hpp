@@ -11,7 +11,8 @@ namespace cv
 namespace dnn
 {
 // #ifdef HAVE_WEBGPU
-    std::vector<webgpu::Tensor> WGPUTensors(const std::vector<Ptr<BackendWrapper> >& ptrs);
+    std::vector<webgpu::Tensor> WGPUTensors(
+        const std::vector<Ptr<BackendWrapper> >& ptrs);
     webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr);
     void copyToTensor(webgpu::Tensor &dst, const Mat &src);
 
@@ -54,7 +55,8 @@ namespace dnn
     };
 // #endif  //HAVE_WEBGPU
 
-    void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, const Ptr<BackendNode>& node);
+    void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, 
+                    const Ptr<BackendNode>& node);
 
     bool haveWGPU();
 }  // namespace dnn

@@ -7,7 +7,8 @@
 // #endif
 namespace cv { namespace dnn { namespace webgpu {
 
-class Buffer {
+class Buffer 
+{
 // #ifdef HAVE_WEBGPU
 public:
     Buffer(const std::shared_ptr<wgpu::Device> device);

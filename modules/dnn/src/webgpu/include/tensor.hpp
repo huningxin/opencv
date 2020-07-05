@@ -14,7 +14,7 @@ public:
     Tensor(Format fmt = wFormatFp32);
     Tensor( const void* data, size_t size_in_byte, 
             wgpu::BufferUsage usage, 
-            Format fmt = wFormatFp32);  //uniform buffer
+            Format fmt = wFormatInt32);  //uniform buffer
     Tensor( const void* data, std::vector<int>& shape, 
             wgpu::BufferUsage usage, 
             Format fmt = wFormatFp32);

@@ -17,7 +17,8 @@ namespace cv { namespace dnn { namespace webgpu {
 // #ifdef HAVE_WEBGPU
 class Context;
 class Tensor;
-class OpBase{
+class OpBase
+{
 public:
     OpBase();
     virtual ~OpBase();

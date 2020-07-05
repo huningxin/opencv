@@ -51,7 +51,7 @@ void bindTensor(Tensor& tensor, uint32_t binding,
     bgEntry.binding = binding;
     bgEntry.buffer = * tensor.getBuffer()->getWebGPUBuffer();
     bgEntry.offset = 0;
-    bgEntry.size = static_cast<uint64_t>(sizeof(tensor.size()));
+    bgEntry.size = tensor.size();
     bgEntry.sampler = nullptr;
     bgEntry.textureView = nullptr;
     bgEntries.push_back(bgEntry);

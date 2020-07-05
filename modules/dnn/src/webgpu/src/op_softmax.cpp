@@ -11,7 +11,8 @@ namespace cv { namespace dnn { namespace webgpu {
 #define LOCAL_SZ_Y 1
 #define LOCAL_SZ_Z 1
 
-struct SoftmaxParam {
+struct SoftmaxParam 
+{
     int channel_size;
     int outer_size;
     int channels;
@@ -56,12 +57,6 @@ bool OpSoftmax::forward(std::vector<Tensor>& ins,
     return forward(ins[0], outs[0]);
 }
 
-void OpSoftmax::setBlobs(std::vector<const void *>& blobs, std::vector<int> shape)
-{
-    max_tensor_ = new Tensor(blobs[0], shape, wgpu::BufferUsage::Storage);
-    sum_tensor_ = new Tensor(blobs[1], shape, wgpu::BufferUsage::Storage);
-}
-
 bool OpSoftmax::forward(Tensor& in, Tensor& out)
 {
     channels_ = in.dimSize(axis_);
@@ -83,13 +78,17 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
     if (max_tensor_ == NULL || sum_tensor_ == NULL)
     {
         std::vector<int> shape = {outer_size_, channel_size_};
-        max_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage);
-        sum_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage);
+        max_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
+        sum_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
     }
-    if(uniformTensor_ == NULL) 
+    if(uniformTensor_ == NULL && needsUniform) 
     {
-        SoftmaxParam param = {channel_size_, outer_size_, channels_, log_softmax_ == true ? 1 : 0};
-        uniformTensor_ = new Tensor((const char*) &param, sizeof(SoftmaxParam), wgpu::BufferUsage::Uniform, wFormatInt32);
+        SoftmaxParam param = {channel_size_, outer_size_, channels_, 
+                              log_softmax_ == true ? 1 : 0};
+        uniformTensor_ = new Tensor((const void*) &param, 
+                                    sizeof(SoftmaxParam), 
+                                    wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst, 
+                                    wFormatInt32);
     }
     
     bindTensor( in,  0, bgEntries);
@@ -113,7 +112,6 @@ bool OpSoftmax::computeGroupCount()
     group_x_ = alignSize(outer_size_, config_.local_size_x) / config_.local_size_x;
     group_y_ = 1;
     group_z_ = 1;
-
     return true;
 }
 

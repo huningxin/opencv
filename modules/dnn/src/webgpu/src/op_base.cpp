@@ -49,8 +49,7 @@ void OpBase::createBindGroupLayout(int buffer_num)
         entriesInitializer.push_back(entry);
     }
     wgpu::BindGroupLayoutDescriptor descriptor;
-    descriptor.entryCount = 
-    static_cast<uint32_t>(entriesInitializer.size());
+    descriptor.entryCount = entriesInitializer.size();
     descriptor.entries = entriesInitializer.data();
     bindgrouplayout_ = device_->CreateBindGroupLayout(&descriptor);
 }
@@ -129,7 +128,8 @@ wgpu::FenceCompletionStatus OpBase::WaitForCompletedValue(
     return wgpu::FenceCompletionStatus::Success;
 }
 
-void OpBase::runCommandBuffer() {
+void OpBase::runCommandBuffer() 
+{
     cv::AutoLock lock(wContextMtx);
     wQueue->Submit(1, &cmd_buffer_);
 }
