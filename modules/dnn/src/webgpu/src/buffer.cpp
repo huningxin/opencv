@@ -33,23 +33,27 @@ void Buffer::setBufferData(const void * data, size_t size)
 
 const void* Buffer::MapReadAsyncAndWait() 
 {
-    wgpu::BufferDescriptor desc = {};
-    desc.size = size_;
-    desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
-    wgpu::Buffer gpuReadBuffer = device_->CreateBuffer(& desc);
-    wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
-    encoder.CopyBufferToBuffer( buffer_, 0, 
-                                gpuReadBuffer, 0, size_);
-    wgpu::CommandBuffer cmdBuffer = encoder.Finish();
-    wQueue->Submit(1, &cmdBuffer);
-    gpuReadBuffer.MapReadAsync(BufferMapReadCallback, this);
+    if(! gpuReadBuffer_)
+    {
+        wgpu::BufferDescriptor desc = {};
+        desc.size = size_;
+        desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
+        gpuReadBuffer_ = device_->CreateBuffer(& desc);
+        wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
+        encoder.CopyBufferToBuffer( buffer_, 0, 
+                                    gpuReadBuffer_, 0, size_);
+        wgpu::CommandBuffer cmdBuffer = encoder.Finish();
+        encoder.Release();
+        wQueue->Submit(1, &cmdBuffer);
+        cmdBuffer.Release();
+    }
+    gpuReadBuffer_.MapReadAsync(BufferMapReadCallback, this);
     usleep(100);
     while(mappedData == nullptr) 
     {
         device_->Tick();
         usleep(100);
     }
-    gpuReadBuffer.Release(); 
     return mappedData;
 }
 

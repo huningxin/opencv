@@ -34,6 +34,7 @@ int main(int argc, char** argv )
     const void * sumdata = op1.sum_tensor_->getBuffer()->MapReadAsyncAndWait();
     printData(sumdata, op1.sum_tensor_->size()/sizeof(float));
     const void * result = out.getBuffer()->MapReadAsyncAndWait();
+    out.unMap();
     printData(result, out.size()/sizeof(float));
     std::cout<<"Finish"<<std::endl;
 }

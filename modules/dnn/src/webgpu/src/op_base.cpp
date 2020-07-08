@@ -26,6 +26,7 @@ OpBase::~OpBase()
     bindgroup_.Release();
     pipeline_.Release();
     pipeline_layout_.Release();
+    cmd_buffer_.Release();
 }
 // the wgpu::BindingType has to be specified  
 // UniformBuffer | StorageBuffer | ReadOnlyStorageBuffer | MapReadBuffer

@@ -40,7 +40,7 @@ const void* Tensor::map()
 
 void Tensor::unMap()
 {
-    buffer_->getWebGPUBuffer()->Unmap();
+    buffer_->unMap();
 }
 
 Shape Tensor::getShape() const{
