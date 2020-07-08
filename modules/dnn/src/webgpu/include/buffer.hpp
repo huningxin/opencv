@@ -16,13 +16,9 @@ public:
             const void* data, size_t size, 
             wgpu::BufferUsage usage = wgpu::BufferUsage::Storage);
 
-    ~Buffer() {bufferMapped_->buffer.Release();}
-    wgpu::Buffer * getWebGPUBuffer() 
-    { return & bufferMapped_->buffer; }
+    ~Buffer() {buffer_.Release();}
+    wgpu::Buffer * getWebGPUBuffer() { return & buffer_; }
     wgpu::BufferUsage getBufferUsage() { return usage_;}
-    std::shared_ptr<wgpu::CreateBufferMappedResult> getBufferMapped()
-    { return bufferMapped_; }
-    void* getBufferMappedData() { return bufferMapped_->data; }
     
     static void BufferMapReadCallback(WGPUBufferMapAsyncStatus status,
                                    const void* data,
@@ -31,12 +27,13 @@ public:
     {
         static_cast<Buffer*>(userdata)->mappedData = data;
     }
+    void setBufferData(const void * data, size_t size);
     const void* MapReadAsyncAndWait(); 
     
 private:
     Buffer();
     std::shared_ptr<wgpu::Device> device_;
-    std::shared_ptr<wgpu::CreateBufferMappedResult>  bufferMapped_;
+    wgpu::Buffer  buffer_;
     wgpu::BufferUsage usage_;
     size_t size_;
     const void * mappedData = nullptr;

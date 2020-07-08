@@ -9,9 +9,6 @@ Buffer::Buffer(std::shared_ptr<wgpu::Device> device)
 {
     device_ =  device;
     usage_ = wgpu::BufferUsage::Storage;
-    bufferMapped_->buffer = nullptr;
-    bufferMapped_->dataLength = 0;
-    bufferMapped_->data = nullptr;
 }
 
 Buffer::Buffer( std::shared_ptr<wgpu::Device> device, 
@@ -24,9 +21,14 @@ Buffer::Buffer( std::shared_ptr<wgpu::Device> device,
     wgpu::BufferDescriptor descriptor = {};
     descriptor.size = size;
     descriptor.usage = usage;
-    bufferMapped_ = std::make_shared<wgpu::CreateBufferMappedResult>
-                    (device_->CreateBufferMapped(&descriptor));
-    if(data) { memcpy(bufferMapped_->data, data, size); }
+    buffer_ = device_->CreateBuffer(& descriptor);
+    if(data) buffer_.SetSubData(0, size_, data);
+}
+
+void Buffer::setBufferData(const void * data, size_t size)
+{
+    size_ = size;
+    buffer_.SetSubData(0, size_, data);
 }
 
 const void* Buffer::MapReadAsyncAndWait() 
@@ -36,7 +38,7 @@ const void* Buffer::MapReadAsyncAndWait()
     desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
     wgpu::Buffer gpuReadBuffer = device_->CreateBuffer(& desc);
     wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
-    encoder.CopyBufferToBuffer( bufferMapped_->buffer, 0, 
+    encoder.CopyBufferToBuffer( buffer_, 0, 
                                 gpuReadBuffer, 0, size_);
     wgpu::CommandBuffer cmdBuffer = encoder.Finish();
     wQueue->Submit(1, &cmdBuffer);
@@ -47,6 +49,7 @@ const void* Buffer::MapReadAsyncAndWait()
         device_->Tick();
         usleep(100);
     }
+    gpuReadBuffer.Release(); 
     return mappedData;
 }
 

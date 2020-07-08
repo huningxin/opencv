@@ -89,7 +89,7 @@ Tensor Tensor::reshape(const void* data, const std::vector<int>& shape,
     }
     else if (data)
     {
-        memcpy(buffer_->getBufferMapped()->data, data, size_in_byte_);
+        buffer_->setBufferData(data, size_in_byte_);
     }
     return *this;
 }
@@ -109,7 +109,7 @@ Tensor Tensor::setUniform(const void * data, Format fmt)
     }
     else if (data)
     {
-        memcpy(buffer_->getBufferMapped()->data, data, size_in_byte_);
+        buffer_->setBufferData(data, size_in_byte_);
     }
     return *this;
 }
@@ -121,7 +121,7 @@ int Tensor::getFormat() const
 
 void Tensor::copyTo(Tensor & dst) 
 {
-    dst.reshape(buffer_->getBufferMapped()->data, shape_, true, format_);
+    dst.reshape(buffer_->MapReadAsyncAndWait(), shape_, true, format_);
 }
 
 // #endif   //HAVE_WEBGPU

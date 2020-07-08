@@ -96,11 +96,7 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
     bindTensor( *sum_tensor_,  2, bgEntries);
     bindTensor( out, 3, bgEntries);
     bindTensor( *uniformTensor_, 4, bgEntries);
-    in.unMap(); 
-    max_tensor_->unMap();
-    sum_tensor_->unMap();
-    out.unMap();
-    uniformTensor_->unMap();
+
     createBindGroup();
     createCommandBuffer();
     runCommandBuffer();
