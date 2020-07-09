@@ -23,12 +23,12 @@ int main(int argc, char** argv )
     float inputData1[] = {1, 2, 3, 4, 5, 6, 7, 8};
     std::vector<int> shape = {2,4,1}; // outer_size * channels * channel_size
 
-    webgpu::Tensor input(inputData1, shape, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst, webgpu::Format::wFormatFp32);
-    webgpu::Tensor out(nullptr, shape, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc, webgpu::Format::wFormatFp32);
+    webgpu::Tensor input(inputData1, shape, webgpu::Format::wFormatFp32);
+    webgpu::Tensor out(nullptr, shape, webgpu::Format::wFormatFp32);
 
     webgpu::OpSoftmax op1(1, false);
     op1.forward(input, out);
-    
+
     const void * maxdata = op1.max_tensor_->getBuffer()->MapReadAsyncAndWait();
     printData(maxdata, op1.max_tensor_->size()/sizeof(float));
     const void * sumdata = op1.sum_tensor_->getBuffer()->MapReadAsyncAndWait();

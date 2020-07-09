@@ -10,29 +10,30 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
     device_ = wDevice;
 }
 
-Tensor::Tensor(const void* data, size_t size_in_byte, 
-                wgpu::BufferUsage usage, Format fmt)
+Tensor::Tensor(const void* data, size_t size_in_byte)
 {
     createContext();
     device_ = wDevice;
     size_in_byte_ = size_in_byte;
-    usage_ = usage;
-    format_ = fmt;
-    setUniform(data, fmt);
+    usage_ = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+    if (device_ == nullptr)
+    {
+        CV_Error(Error::StsError, "device is NULL");
+    }
+    fillData(data);
 }
 
-Tensor::Tensor(const void* data, std::vector<int>& shape, 
-                wgpu::BufferUsage usage, Format fmt) 
+Tensor::Tensor(const void* data, std::vector<int>& shape, Format fmt) 
 {
     createContext();
     device_ = wDevice;
     size_in_byte_ = 0;
-    usage_ = usage;
+    usage_ = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
     format_ = fmt;
     reshape(data, shape);
 }
 
-const void* Tensor::map()
+const void* Tensor::mapRead()
 {
     return buffer_->MapReadAsyncAndWait();
 
@@ -82,36 +83,25 @@ Tensor Tensor::reshape(const void* data, const std::vector<int>& shape,
     if (alloc || new_size > size_in_byte_)
         alloc = true;
     size_in_byte_ = new_size;
-    if (alloc || !buffer_)
+    if(alloc)
     {
-        // TODO: specific data type 
         buffer_.reset(new Buffer(device_, data, size_in_byte_, usage_));
+        return * this;
     }
-    else if (data)
-    {
-        buffer_->setBufferData(data, size_in_byte_);
-    }
-    return *this;
+    fillData(data);
 }
 
-Tensor Tensor::setUniform(const void * data, Format fmt) 
+Tensor Tensor::fillData(const void * data) 
 {
-    if (device_ == nullptr)
-    {
-        CV_Error(Error::StsError, "device is NULL");
-        return *this;
-    }
-    if (checkFormat(fmt) && fmt != format_) format_ = fmt;
     if (!buffer_)
     {
-        // TODO: specific data type 
         buffer_.reset(new Buffer(device_, data, size_in_byte_, usage_));
     }
     else if (data)
     {
         buffer_->setBufferData(data, size_in_byte_);
     }
-    return *this;
+     return * this;
 }
 
 int Tensor::getFormat() const

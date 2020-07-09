@@ -78,17 +78,15 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
     if (max_tensor_ == NULL || sum_tensor_ == NULL)
     {
         std::vector<int> shape = {outer_size_, channel_size_};
-        max_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
-        sum_tensor_ = new Tensor(NULL, shape, wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc);
+        max_tensor_ = new Tensor(NULL, shape);
+        sum_tensor_ = new Tensor(NULL, shape);
     }
     if(uniformTensor_ == NULL && needsUniform) 
     {
         SoftmaxParam param = {channel_size_, outer_size_, channels_, 
                               log_softmax_ == true ? 1 : 0};
         uniformTensor_ = new Tensor((const void*) &param, 
-                                    sizeof(SoftmaxParam), 
-                                    wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst, 
-                                    wFormatInt32);
+                                    sizeof(SoftmaxParam));
     }
     
     bindTensor( in,  0, bgEntries);
