@@ -16,7 +16,11 @@ public:
             const void* data, size_t size, 
             wgpu::BufferUsage usage = wgpu::BufferUsage::Storage);
 
-    ~Buffer() {buffer_.Release(); gpuReadBuffer_.Release();}
+    ~Buffer() 
+    {
+        buffer_.Release();
+        if(gpuReadBuffer_) gpuReadBuffer_.Release();
+    }
     wgpu::Buffer * getWebGPUBuffer() { return & buffer_; }
     wgpu::BufferUsage getBufferUsage() { return usage_;}
     
@@ -29,7 +33,7 @@ public:
     }
     void setBufferData(const void * data, size_t size);
     const void* MapReadAsyncAndWait(); 
-    void unMap() { gpuReadBuffer_.Unmap(); }
+    void unMap() { if(gpuReadBuffer_) gpuReadBuffer_.Unmap(); }
 private:
     Buffer();
     std::shared_ptr<wgpu::Device> device_;

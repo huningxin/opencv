@@ -39,14 +39,14 @@ const void* Buffer::MapReadAsyncAndWait()
         desc.size = size_;
         desc.usage = wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::MapRead;
         gpuReadBuffer_ = device_->CreateBuffer(& desc);
-        wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
-        encoder.CopyBufferToBuffer( buffer_, 0, 
-                                    gpuReadBuffer_, 0, size_);
-        wgpu::CommandBuffer cmdBuffer = encoder.Finish();
-        encoder.Release();
-        wQueue->Submit(1, &cmdBuffer);
-        cmdBuffer.Release();
     }
+    wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
+    encoder.CopyBufferToBuffer( buffer_, 0, 
+                                gpuReadBuffer_, 0, size_);
+    wgpu::CommandBuffer cmdBuffer = encoder.Finish();
+    encoder.Release();
+    wQueue->Submit(1, &cmdBuffer);
+    cmdBuffer.Release();
     gpuReadBuffer_.MapReadAsync(BufferMapReadCallback, this);
     usleep(100);
     while(mappedData == nullptr) 
