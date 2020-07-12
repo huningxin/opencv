@@ -57,14 +57,14 @@ void bindTensor(Tensor& tensor, uint32_t binding,
     bgEntries.push_back(bgEntry);
 }
 
-void bindUniform(wgpu::Buffer& buffer, uint32_t binding, size_t size, 
+void bindUniform(Buffer& buffer, uint32_t binding,
                 std::vector<wgpu::BindGroupEntry>& bgEntries)
 {
     wgpu::BindGroupEntry bgEntry = {};
     bgEntry.binding = binding;
-    bgEntry.buffer = buffer;
+    bgEntry.buffer = * buffer.getWebGPUBuffer();
     bgEntry.offset = 0;
-    bgEntry.size = size;
+    bgEntry.size = buffer.getSize();
     bgEntry.sampler = nullptr;
     bgEntry.textureView = nullptr;
     bgEntries.push_back(bgEntry);

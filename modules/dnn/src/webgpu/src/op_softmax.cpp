@@ -32,6 +32,7 @@ OpSoftmax::~OpSoftmax()
         delete max_tensor_;
     if (sum_tensor_)
         delete sum_tensor_;
+    // no need to release global uniform buffer
 }
 
 void OpSoftmax::reshapeOutTensor(Tensor& in, Tensor& out)
@@ -81,22 +82,18 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
         max_tensor_ = new Tensor(NULL, shape);
         sum_tensor_ = new Tensor(NULL, shape);
     }
-    if(uniformBuffer_ == NULL && needsUniform) 
+    if(needsUniform && ! uniformBuffer_) 
     {
         SoftmaxParam param = {channel_size_, outer_size_, channels_, 
                               log_softmax_ == true ? 1 : 0};
-        wgpu::BufferDescriptor descriptor = {};
-        descriptor.size = sizeof(SoftmaxParam);
-        descriptor.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-        uniformBuffer_ = wDevice->CreateBuffer(& descriptor);
-        uniformBuffer_.SetSubData(0, sizeof(SoftmaxParam), & param);
+        uniformBuffer_ = new Buffer(&param, sizeof(SoftmaxParam));
     }
     
     bindTensor( in,  0, bgEntries);
     bindTensor( *max_tensor_,  1, bgEntries);
     bindTensor( *sum_tensor_,  2, bgEntries);
     bindTensor( out, 3, bgEntries);
-    bindUniform( uniformBuffer_, 4, sizeof(SoftmaxParam), bgEntries);
+    bindUniform( *uniformBuffer_, 4, bgEntries);
 
     createBindGroup();
     createCommandBuffer();

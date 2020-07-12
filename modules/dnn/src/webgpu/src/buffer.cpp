@@ -25,6 +25,20 @@ Buffer::Buffer( std::shared_ptr<wgpu::Device> device,
     if(data) buffer_.SetSubData(0, size_, data);
 }
 
+Buffer::Buffer( const void* data, size_t size,  
+        wgpu::BufferUsage usage)
+{
+    createContext();
+    device_ = wDevice;
+    usage_ = usage;
+    size_ = size;
+    wgpu::BufferDescriptor descriptor = {};
+    descriptor.size = size;
+    descriptor.usage = usage;
+    buffer_ = device_->CreateBuffer(& descriptor);
+    if(data) buffer_.SetSubData(0, size_, data);
+}
+
 void Buffer::setBufferData(const void * data, size_t size)
 {
     size_ = size;
