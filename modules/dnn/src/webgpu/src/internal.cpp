@@ -57,6 +57,19 @@ void bindTensor(Tensor& tensor, uint32_t binding,
     bgEntries.push_back(bgEntry);
 }
 
+void bindUniform(wgpu::Buffer& buffer, uint32_t binding, size_t size, 
+                std::vector<wgpu::BindGroupEntry>& bgEntries)
+{
+    wgpu::BindGroupEntry bgEntry = {};
+    bgEntry.binding = binding;
+    bgEntry.buffer = buffer;
+    bgEntry.offset = 0;
+    bgEntry.size = size;
+    bgEntry.sampler = nullptr;
+    bgEntry.textureView = nullptr;
+    bgEntries.push_back(bgEntry);
+}
+
 void computeConvOutputShapeAndPadding(const PaddingMode& padding_mode,
                                       int& padding_top, int& padding_left,
                                       const int& in_h, const int& in_w,

@@ -28,7 +28,7 @@ public:
                          std::vector<Tensor>& outs) CV_OVERRIDE;
     Tensor* max_tensor_ = nullptr;
     Tensor* sum_tensor_ = nullptr;
-    Tensor* uniformTensor_ = nullptr;
+    wgpu::Buffer uniformBuffer_ = nullptr;
 private:
     bool init(const int axis, const bool log_softmax);
     bool computeGroupCount();

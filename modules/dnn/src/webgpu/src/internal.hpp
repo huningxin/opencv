@@ -20,6 +20,8 @@ std::vector<uint32_t> compile(const std::string& name,
                               const std::string& data);
 void bindTensor(Tensor& tensor, uint32_t binding, 
                 std::vector<wgpu::BindGroupEntry>& bgEntries);
+void bindUniform(wgpu::Buffer& buffer, uint32_t binding, size_t size, 
+                std::vector<wgpu::BindGroupEntry>& bgEntries);
 void computeConvOutputShapeAndPadding(const PaddingMode& padding_mode,
                                       int& padding_top, int& padding_left,
                                       const int& in_h, const int& in_w,

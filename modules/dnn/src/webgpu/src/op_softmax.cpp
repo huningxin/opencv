@@ -81,19 +81,22 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
         max_tensor_ = new Tensor(NULL, shape);
         sum_tensor_ = new Tensor(NULL, shape);
     }
-    if(uniformTensor_ == NULL && needsUniform) 
+    if(uniformBuffer_ == NULL && needsUniform) 
     {
         SoftmaxParam param = {channel_size_, outer_size_, channels_, 
                               log_softmax_ == true ? 1 : 0};
-        uniformTensor_ = new Tensor((const void*) &param, 
-                                    sizeof(SoftmaxParam));
+        wgpu::BufferDescriptor descriptor = {};
+        descriptor.size = sizeof(SoftmaxParam);
+        descriptor.usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
+        uniformBuffer_ = wDevice->CreateBuffer(& descriptor);
+        uniformBuffer_.SetSubData(0, sizeof(SoftmaxParam), & param);
     }
     
     bindTensor( in,  0, bgEntries);
     bindTensor( *max_tensor_,  1, bgEntries);
     bindTensor( *sum_tensor_,  2, bgEntries);
     bindTensor( out, 3, bgEntries);
-    bindTensor( *uniformTensor_, 4, bgEntries);
+    bindUniform( uniformBuffer_, 4, sizeof(SoftmaxParam), bgEntries);
 
     createBindGroup();
     createCommandBuffer();

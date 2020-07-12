@@ -12,7 +12,6 @@ class Buffer;
 class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
-    Tensor( const void* data, size_t size_in_byte);  //uniform buffer
     Tensor( const void* data, std::vector<int>& shape,  
             Format fmt = wFormatFp32);
     const void* mapRead();

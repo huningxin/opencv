@@ -10,19 +10,6 @@ Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
     device_ = wDevice;
 }
 
-Tensor::Tensor(const void* data, size_t size_in_byte)
-{
-    createContext();
-    device_ = wDevice;
-    size_in_byte_ = size_in_byte;
-    usage_ = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst;
-    if (device_ == nullptr)
-    {
-        CV_Error(Error::StsError, "device is NULL");
-    }
-    fillData(data);
-}
-
 Tensor::Tensor(const void* data, std::vector<int>& shape, Format fmt) 
 {
     createContext();
