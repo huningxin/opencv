@@ -12,10 +12,10 @@ class Buffer
 // #ifdef HAVE_WEBGPU
 public:
     Buffer(const std::shared_ptr<wgpu::Device> device);
-    Buffer( const std::shared_ptr<wgpu::Device> device, 
+    Buffer(const std::shared_ptr<wgpu::Device> device, 
             const void* data, size_t size, 
             wgpu::BufferUsage usage = wgpu::BufferUsage::Storage | 
-            wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopySrc );
+            wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc );
     Buffer( const void* data, size_t size,  
             wgpu::BufferUsage usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst);
     ~Buffer() 
