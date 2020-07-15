@@ -11,7 +11,7 @@ Buffer::Buffer(std::shared_ptr<wgpu::Device> device)
     usage_ = wgpu::BufferUsage::Storage;
 }
 
-Buffer::Buffer( std::shared_ptr<wgpu::Device> device, 
+Buffer::Buffer(std::shared_ptr<wgpu::Device> device, 
                 const void* data, size_t size, 
                 wgpu::BufferUsage usage) 
 {
@@ -25,7 +25,7 @@ Buffer::Buffer( std::shared_ptr<wgpu::Device> device,
     if(data) buffer_.SetSubData(0, size_, data);
 }
 
-Buffer::Buffer( const void* data, size_t size,  
+Buffer::Buffer(const void* data, size_t size,  
         wgpu::BufferUsage usage)
 {
     createContext();

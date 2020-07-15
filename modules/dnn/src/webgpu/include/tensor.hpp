@@ -12,7 +12,7 @@ class Buffer;
 class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
-    Tensor( const void* data, std::vector<int>& shape,  
+    Tensor(const void* data, std::vector<int>& shape,  
             Format fmt = wFormatFp32);
     const void* mapRead();
     void unMap();
@@ -23,7 +23,7 @@ public:
     // Change shape and format to as passed in.
     // Copy data if data != NULL
     // Allocate new internal buffer if new size > old size or alloc flag is true
-    Tensor reshape( const void* data, const std::vector<int>& shape, 
+    Tensor reshape(const void* data, const std::vector<int>& shape, 
                     bool alloc = false, 
                     Format fmt = wFormatInvalid);
     Tensor fillData(const void * data);

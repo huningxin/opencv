@@ -89,11 +89,11 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
         uniformBuffer_ = new Buffer(&param, sizeof(SoftmaxParam));
     }
     
-    bindTensor( in,  0, bgEntries);
-    bindTensor( *max_tensor_,  1, bgEntries);
-    bindTensor( *sum_tensor_,  2, bgEntries);
-    bindTensor( out, 3, bgEntries);
-    bindUniform( *uniformBuffer_, 4, bgEntries);
+    bindTensor(in,  0, bgEntries);
+    bindTensor(*max_tensor_,  1, bgEntries);
+    bindTensor(*sum_tensor_,  2, bgEntries);
+    bindTensor(out, 3, bgEntries);
+    bindUniform(*uniformBuffer_, 4, bgEntries);
 
     createBindGroup();
     createCommandBuffer();

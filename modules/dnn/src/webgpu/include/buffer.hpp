@@ -13,11 +13,11 @@ class Buffer
 public:
     Buffer(const std::shared_ptr<wgpu::Device> device);
     Buffer(const std::shared_ptr<wgpu::Device> device, 
-            const void* data, size_t size, 
-            wgpu::BufferUsage usage = wgpu::BufferUsage::Storage | 
-            wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc );
-    Buffer( const void* data, size_t size,  
-            wgpu::BufferUsage usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst);
+           const void* data, size_t size, 
+           wgpu::BufferUsage usage = wgpu::BufferUsage::Storage | 
+           wgpu::BufferUsage::CopyDst | wgpu::BufferUsage::CopySrc);
+    Buffer(const void* data, size_t size,  
+           wgpu::BufferUsage usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst);
     ~Buffer() 
     {
         buffer_.Release();
