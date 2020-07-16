@@ -27,9 +27,9 @@ public:
     wgpu::BufferUsage getBufferUsage() { return usage_;}
     
     static void BufferMapReadCallback(WGPUBufferMapAsyncStatus status,
-                                   const void* data,
-                                   uint64_t dataLength,
-                                   void* userdata)
+                                      const void* data,
+                                      uint64_t dataLength,
+                                      void* userdata)
     {
         static_cast<Buffer*>(userdata)->mappedData = data;
     }

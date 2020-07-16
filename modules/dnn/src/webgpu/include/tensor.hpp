@@ -13,7 +13,7 @@ class Tensor{
 public:
     Tensor(Format fmt = wFormatFp32);
     Tensor(const void* data, std::vector<int>& shape,  
-            Format fmt = wFormatFp32);
+           Format fmt = wFormatFp32);
     const void* mapRead();
     void unMap();
     Shape getShape() const;
@@ -24,8 +24,8 @@ public:
     // Copy data if data != NULL
     // Allocate new internal buffer if new size > old size or alloc flag is true
     Tensor reshape(const void* data, const std::vector<int>& shape, 
-                    bool alloc = false, 
-                    Format fmt = wFormatInvalid);
+                   bool alloc = false, 
+                   Format fmt = wFormatInvalid);
     Tensor fillData(const void * data);
     int getFormat() const;
     size_t size() const { return size_in_byte_; }
@@ -38,7 +38,8 @@ private:
     size_t size_in_byte_;
     std::shared_ptr<Buffer> buffer_;
     Format format_;
-    wgpu::BufferUsage usage_;
+    wgpu::BufferUsage usage_ = wgpu::BufferUsage::Storage | 
+    wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
 };
 
 // #endif  //HAVE_WEBGPU

@@ -15,7 +15,6 @@ Tensor::Tensor(const void* data, std::vector<int>& shape, Format fmt)
     createContext();
     device_ = wDevice;
     size_in_byte_ = 0;
-    usage_ = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
     format_ = fmt;
     reshape(data, shape);
 }
@@ -54,7 +53,7 @@ int Tensor::dimNum() const
 }
 
 Tensor Tensor::reshape(const void* data, const std::vector<int>& shape, 
-                        bool alloc, Format fmt)
+                       bool alloc, Format fmt)
 {
     if (device_ == nullptr)
     {
@@ -76,6 +75,7 @@ Tensor Tensor::reshape(const void* data, const std::vector<int>& shape,
         return * this;
     }
     fillData(data);
+    return * this;
 }
 
 Tensor Tensor::fillData(const void * data) 

@@ -39,13 +39,11 @@ bool isAvailable()
 }
 Context::Context() 
 {
-    // create wgpu::Device
     wDevice = std::make_shared<wgpu::Device>(createCppDawnDevice());
     wQueue = std::make_shared<wgpu::Queue>(wDevice->GetDefaultQueue());
 }
 Context::~Context() 
 {
-    // how to release object
     wDevice->Release();
     wQueue->Release();
 }

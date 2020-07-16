@@ -20,7 +20,7 @@ file(GLOB DNN
     ${OPENCV_SOURCE_DIR}/modules/dnn/src/webgpu/dawn/*.cpp
 )
 
-add_executable( softmaxTest op_softmax_test.cpp  
+add_executable(softmaxTest op_softmax_test.cpp  
                 ${SOURCES} 
                 ${Dawn} 
                 ${DNN}

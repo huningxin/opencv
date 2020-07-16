@@ -20,7 +20,7 @@ void copyToMat(Mat &dst, webgpu::Tensor &src)
     CV_Assert(dst.type() == CV_32F);
 
     std::vector<int> shape = src.getShape();
-    void *data = const_cast<void *>(src.map() );
+    void *data = const_cast<void *>(src.mapRead() );
     Mat tmp(shape, CV_32F, data);
     tmp.copyTo(dst);
     src.unMap();

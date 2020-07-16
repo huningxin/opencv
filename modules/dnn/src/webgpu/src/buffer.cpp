@@ -7,13 +7,14 @@ namespace cv { namespace dnn { namespace webgpu {
 
 Buffer::Buffer(std::shared_ptr<wgpu::Device> device)
 {
-    device_ =  device;
-    usage_ = wgpu::BufferUsage::Storage;
+    device_ = device;
+    usage_ = wgpu::BufferUsage::Storage | wgpu::BufferUsage::CopyDst |
+             wgpu::BufferUsage::CopySrc;
 }
 
 Buffer::Buffer(std::shared_ptr<wgpu::Device> device, 
-                const void* data, size_t size, 
-                wgpu::BufferUsage usage) 
+               const void* data, size_t size, 
+               wgpu::BufferUsage usage) 
 {
     device_ = device;
     usage_ = usage;
@@ -26,7 +27,7 @@ Buffer::Buffer(std::shared_ptr<wgpu::Device> device,
 }
 
 Buffer::Buffer(const void* data, size_t size,  
-        wgpu::BufferUsage usage)
+               wgpu::BufferUsage usage)
 {
     createContext();
     device_ = wDevice;
@@ -55,8 +56,8 @@ const void* Buffer::MapReadAsyncAndWait()
         gpuReadBuffer_ = device_->CreateBuffer(& desc);
     }
     wgpu::CommandEncoder encoder = device_->CreateCommandEncoder();
-    encoder.CopyBufferToBuffer( buffer_, 0, 
-                                gpuReadBuffer_, 0, size_);
+    encoder.CopyBufferToBuffer(buffer_, 0, 
+                               gpuReadBuffer_, 0, size_);
     wgpu::CommandBuffer cmdBuffer = encoder.Finish();
     encoder.Release();
     wQueue->Submit(1, &cmdBuffer);

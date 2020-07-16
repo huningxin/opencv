@@ -9,10 +9,6 @@ class Context
 public:
     Context();
     ~Context();
-std::shared_ptr<Context> wCtx;
-std::shared_ptr<wgpu::Device> wDevice = nullptr;
-std::shared_ptr<wgpu::Queue> wQueue = nullptr;
-cv::Mutex wContextMtx;
 };
 
 void createContext();

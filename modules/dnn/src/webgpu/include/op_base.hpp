@@ -36,7 +36,7 @@ protected:
     void createCommandBuffer();
     void runCommandBuffer();
     wgpu::FenceCompletionStatus WaitForCompletedValue(wgpu::Fence fence, 
-                                                uint64_t completedValue);
+                                                      uint64_t completedValue);
     
     std::shared_ptr<wgpu::Device> device_;
     wgpu::ComputePipeline pipeline_;

@@ -18,8 +18,7 @@ void printData(const void * data, int num) {
 }
 int main(int argc, char** argv )
 {
-    webgpu::wDevice = std::make_shared<wgpu::Device>(webgpu::createCppDawnDevice());
-    webgpu::wQueue = std::make_shared<wgpu::Queue>(webgpu::wDevice->GetDefaultQueue());
+    webgpu::isAvailable();
     float inputData1[] = {1, 2, 3, 4, 5, 6, 7, 8};
     std::vector<int> shape = {2,4,1}; // outer_size * channels * channel_size
 

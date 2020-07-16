@@ -183,7 +183,7 @@ wgpu::Device createCppDawnDevice() {
     return wgpu::Device::Acquire(backendDevice);
 }
 
-wgpu::CreateBufferMappedResult createBufferMappedFromData( wgpu::Device& device,
+wgpu::CreateBufferMappedResult createBufferMappedFromData(wgpu::Device& device,
                                                         const void* data,
                                                         size_t size,
                                                         wgpu::BufferUsage usage){

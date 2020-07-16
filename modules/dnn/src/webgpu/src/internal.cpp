@@ -58,7 +58,7 @@ void bindTensor(Tensor& tensor, uint32_t binding,
 }
 
 void bindUniform(Buffer& buffer, uint32_t binding,
-                std::vector<wgpu::BindGroupEntry>& bgEntries)
+                 std::vector<wgpu::BindGroupEntry>& bgEntries)
 {
     wgpu::BindGroupEntry bgEntry = {};
     bgEntry.binding = binding;
@@ -106,11 +106,11 @@ void computeConvOutputShapeAndPadding(const PaddingMode& padding_mode,
 }
 
 void computePoolOutputShape(const PaddingMode& padding_mode,
-        const int& padding_top, const int& padding_left,
-        const int& in_h, const int& in_w,
-        const int& filter_h, const int& filter_w,
-        const int& stride_h, const int& stride_w,
-        int& out_h, int& out_w)
+                            const int& padding_top, const int& padding_left,
+                            const int& in_h, const int& in_w,
+                            const int& filter_h, const int& filter_w,
+                            const int& stride_h, const int& stride_w,
+                            int& out_h, int& out_w)
 {
     if (padding_mode == wPaddingModeValid)
     {
