@@ -28,10 +28,6 @@ int main(int argc, char** argv )
     webgpu::OpSoftmax op1(1, false);
     op1.forward(input, out);
 
-    const void * maxdata = op1.max_tensor_->getBuffer()->MapReadAsyncAndWait();
-    printData(maxdata, op1.max_tensor_->size()/sizeof(float));
-    const void * sumdata = op1.sum_tensor_->getBuffer()->MapReadAsyncAndWait();
-    printData(sumdata, op1.sum_tensor_->size()/sizeof(float));
     const void * result = out.getBuffer()->MapReadAsyncAndWait();
     out.unMap();
     printData(result, out.size()/sizeof(float));

@@ -32,7 +32,8 @@ OpSoftmax::~OpSoftmax()
         delete max_tensor_;
     if (sum_tensor_)
         delete sum_tensor_;
-    // no need to release global uniform buffer
+    if(uniformBuffer_)
+        uniformBuffer_->getWebGPUBuffer()->Release();
 }
 
 void OpSoftmax::reshapeOutTensor(Tensor& in, Tensor& out)
@@ -82,7 +83,7 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
         max_tensor_ = new Tensor(NULL, shape);
         sum_tensor_ = new Tensor(NULL, shape);
     }
-    if(needsUniform && ! uniformBuffer_) 
+    if(needsUniform) 
     {
         SoftmaxParam param = {channel_size_, outer_size_, channels_, 
                               log_softmax_ == true ? 1 : 0};
@@ -93,7 +94,7 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
     bindTensor(*max_tensor_,  1, bgEntries);
     bindTensor(*sum_tensor_,  2, bgEntries);
     bindTensor(out, 3, bgEntries);
-    bindUniform(*uniformBuffer_, 4, bgEntries);
+    bindUniform(* uniformBuffer_, 4, bgEntries);
 
     createBindGroup();
     createCommandBuffer();

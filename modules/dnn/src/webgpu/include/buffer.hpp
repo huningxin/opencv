@@ -20,7 +20,7 @@ public:
            wgpu::BufferUsage usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst);
     ~Buffer() 
     {
-        buffer_.Release();
+        if(buffer_) buffer_.Release();
         if(gpuReadBuffer_) gpuReadBuffer_.Release();
     }
     wgpu::Buffer * getWebGPUBuffer() { return & buffer_; }

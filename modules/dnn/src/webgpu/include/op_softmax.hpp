@@ -26,9 +26,6 @@ public:
     virtual bool forward(std::vector<Tensor>& ins,
                          std::vector<Tensor>& blobs,
                          std::vector<Tensor>& outs) CV_OVERRIDE;
-    Tensor* max_tensor_ = nullptr;
-    Tensor* sum_tensor_ = nullptr;
-    Buffer* uniformBuffer_ = nullptr;
 private:
     bool init(const int axis, const bool log_softmax);
     bool computeGroupCount();
@@ -38,6 +35,9 @@ private:
     int channel_size_;
     int outer_size_;
     bool log_softmax_;
+    Tensor* max_tensor_ = nullptr;
+    Tensor* sum_tensor_ = nullptr;
+    Buffer* uniformBuffer_;
     SoftmaxShaderConfig config_;
 };
 
