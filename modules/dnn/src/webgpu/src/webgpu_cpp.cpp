@@ -1,9 +1,5 @@
-
 #include "dawn/webgpu_cpp.h"
-
 namespace wgpu {
-
-
     static_assert(sizeof(AdapterType) == sizeof(WGPUAdapterType), "sizeof mismatch for AdapterType");
     static_assert(alignof(AdapterType) == alignof(WGPUAdapterType), "alignof mismatch for AdapterType");
 
@@ -1742,5 +1738,4 @@ namespace wgpu {
     Proc GetProcAddress(Device const& device, const char* procName) {
         return reinterpret_cast<Proc>(wgpuGetProcAddress(device.Get(), procName));
     }
-
 }

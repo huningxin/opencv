@@ -195,6 +195,7 @@ testing::internal::ParamGenerator< tuple<Backend, Target> > dnnBackendsAndTarget
         bool withHalide /*= false*/,
         bool withCpuOCV /*= true*/,
         bool withVkCom /*= true*/,
+        bool withWGPU /*= true*/,
         bool withCUDA /*= true*/,
         bool withNgraph /*= true*/
 )
@@ -241,6 +242,13 @@ testing::internal::ParamGenerator< tuple<Backend, Target> > dnnBackendsAndTarget
         available = getAvailableTargets(DNN_BACKEND_VKCOM);
         for (std::vector< Target >::const_iterator i = available.begin(); i != available.end(); ++i)
             targets.push_back(make_tuple(DNN_BACKEND_VKCOM, *i));
+    }
+
+    if(withWGPU)
+    {
+        available = getAvailableTargets(DNN_BACKEND_WGPU);
+        for (std::vector< Target >::const_iterator i = available.begin(); i != available.end(); ++i)
+            targets.push_back(make_tuple(DNN_BACKEND_WGPU, *i));
     }
 
 #ifdef HAVE_CUDA
@@ -414,6 +422,12 @@ void initDNNTests()
         CV_TEST_TAG_DNN_SKIP_VULKAN
     );
 #endif
+
+#ifdef HAVE_WEBGPU
+    registerGlobalSkipTag(
+        CV_TEST_TAG_DNN_SKIP_WGPU
+    );
+#endif  // HAVE_WEBGPU  
 
 #ifdef HAVE_CUDA
     registerGlobalSkipTag(

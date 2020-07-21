@@ -1,20 +1,12 @@
-// This file is part of OpenCV project.
-// It is subject to the license terms in the LICENSE file found in the top-level directory
-// of this distribution and at http://opencv.org/license.html.
-//
-// Copyright (C) 2018, Intel Corporation, all rights reserved.
-// Third party copyrights are property of their respective owners.
-
 #ifndef OPENCV_DNN_WEBGPU_OP_BASE_HPP
 #define OPENCV_DNN_WEBGPU_OP_BASE_HPP
 
 #include "../../precomp.hpp"
 #include "wgpucom.hpp"
 #include "../dawn/dawnUtils.hpp"
-#include "tensor.hpp"
 
 namespace cv { namespace dnn { namespace webgpu {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 class Context;
 class Tensor;
 class OpBase
@@ -45,15 +37,15 @@ protected:
     wgpu::BindGroup bindgroup_;
     wgpu::ShaderModule module_;
     wgpu::PipelineLayout pipeline_layout_;
-    std::vector<wgpu::BindGroupEntry> bgEntries;
+    std::vector<wgpu::BindGroupEntry> bgEntries = {};
 
-    bool needsUniform = true;
     uint32_t group_x_;
     uint32_t group_y_;
     uint32_t group_z_;
     std::string type_;
 };
-// #endif  //HAVE_WEBGPU
+
+#endif  // HAVE_WEBGPU
 
 }}}  //namespace cv::dnn::webgpu
 

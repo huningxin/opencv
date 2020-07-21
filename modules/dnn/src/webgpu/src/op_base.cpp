@@ -6,7 +6,7 @@
 #include <unistd.h>
 
 namespace cv { namespace dnn { namespace webgpu {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 OpBase::OpBase()
 {
     createContext();
@@ -28,8 +28,7 @@ OpBase::~OpBase()
     pipeline_layout_.Release();
     cmd_buffer_.Release();
 }
-// the wgpu::BindingType has to be specified  
-// UniformBuffer | StorageBuffer | ReadOnlyStorageBuffer | MapReadBuffer
+
 void OpBase::createBindGroupLayout(int buffer_num) 
 {
     if(buffer_num <= 0)
@@ -42,17 +41,29 @@ void OpBase::createBindGroupLayout(int buffer_num)
         entry.type = wgpu::BindingType::StorageBuffer;
         entriesInitializer.push_back(entry);
     }
-    if(needsUniform) {
-        wgpu::BindGroupLayoutEntry entry = {};
-        entry.binding = buffer_num;
-        entry.visibility = wgpu::ShaderStage::Compute;
-        entry.type = wgpu::BindingType::UniformBuffer;
-        entriesInitializer.push_back(entry);
-    }
+    // unfirom buffer
+    wgpu::BindGroupLayoutEntry entry = {};
+    entry.binding = buffer_num;
+    entry.visibility = wgpu::ShaderStage::Compute;
+    entry.type = wgpu::BindingType::UniformBuffer;
+    entriesInitializer.push_back(entry);
+
     wgpu::BindGroupLayoutDescriptor descriptor;
     descriptor.entryCount = entriesInitializer.size();
     descriptor.entries = entriesInitializer.data();
     bindgrouplayout_ = device_->CreateBindGroupLayout(&descriptor);
+
+    for(int i = 0; i <= buffer_num; i++)
+    {
+        wgpu::BindGroupEntry bgEntry = {};
+        bgEntry.binding = i;
+        bgEntry.buffer = nullptr;
+        bgEntry.offset = 0;
+        bgEntry.size = 0;
+        bgEntry.sampler = nullptr;
+        bgEntry.textureView = nullptr;
+        bgEntries.push_back(bgEntry);
+    }
 }
 
 void OpBase::createBindGroup()
@@ -113,28 +124,12 @@ void OpBase::createCommandBuffer()
     cmd_buffer_ = encoder.Finish(); 
 }
 
-wgpu::FenceCompletionStatus OpBase::WaitForCompletedValue(
-    wgpu::Fence fence, uint64_t completedValue) 
-{
-    if (fence.GetCompletedValue() < completedValue) 
-    {
-        device_->Tick();
-        usleep(100);
-    }
-    if(fence.GetCompletedValue() != completedValue)
-    {
-        return wgpu::FenceCompletionStatus::Error;
-    }
-
-    return wgpu::FenceCompletionStatus::Success;
-}
-
 void OpBase::runCommandBuffer() 
 {
     cv::AutoLock lock(wContextMtx);
     wQueue->Submit(1, &cmd_buffer_);
 }
 
-// #endif //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}}  // namsspace cv::dnn::webgpu

@@ -1,9 +1,9 @@
-#include "../include/tensor.hpp"
+#include "../../precomp.hpp"
 #include "common.hpp"
 #include "internal.hpp"
 #include <unistd.h>
 namespace cv { namespace dnn { namespace webgpu {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 Tensor::Tensor(Format fmt) : size_in_byte_(0), format_(fmt)
 {
     createContext();
@@ -101,6 +101,6 @@ void Tensor::copyTo(Tensor & dst)
     dst.reshape(buffer_->MapReadAsyncAndWait(), shape_, true, format_);
 }
 
-// #endif   //HAVE_WEBGPU
+#endif   //HAVE_WEBGPU
 
 }}}  //namespace cv::dnn:webgpu

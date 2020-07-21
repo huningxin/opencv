@@ -5,7 +5,7 @@
 
 namespace cv { namespace dnn { namespace webgpu {
 
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 
 #define LOCAL_SZ_X 256
 #define LOCAL_SZ_Y 1
@@ -23,7 +23,6 @@ OpSoftmax::OpSoftmax(const int axis, const bool log_softmax)
 {
     init(axis, log_softmax);
     type_ = "Softmax";
-    needsUniform = true;
 }
 
 OpSoftmax::~OpSoftmax()
@@ -32,7 +31,7 @@ OpSoftmax::~OpSoftmax()
         delete max_tensor_;
     if (sum_tensor_)
         delete sum_tensor_;
-    if(uniformBuffer_)
+    if (uniformBuffer_)
         uniformBuffer_->getWebGPUBuffer()->Release();
 }
 
@@ -83,18 +82,17 @@ bool OpSoftmax::forward(Tensor& in, Tensor& out)
         max_tensor_ = new Tensor(NULL, shape);
         sum_tensor_ = new Tensor(NULL, shape);
     }
-    if(needsUniform) 
-    {
-        SoftmaxParam param = {channel_size_, outer_size_, channels_, 
-                              log_softmax_ == true ? 1 : 0};
-        uniformBuffer_ = new Buffer(&param, sizeof(SoftmaxParam));
-    }
+
+    SoftmaxParam param = {channel_size_, outer_size_, channels_, 
+                            log_softmax_ == true ? 1 : 0};
+    if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(SoftmaxParam));
+    else uniformBuffer_->setBufferData(&param, sizeof(SoftmaxParam));
     
     bindTensor(in,  0, bgEntries);
     bindTensor(*max_tensor_,  1, bgEntries);
     bindTensor(*sum_tensor_,  2, bgEntries);
     bindTensor(out, 3, bgEntries);
-    bindUniform(* uniformBuffer_, 4, bgEntries);
+    bindUniform(*uniformBuffer_, 4, bgEntries);
 
     createBindGroup();
     createCommandBuffer();
@@ -110,6 +108,6 @@ bool OpSoftmax::computeGroupCount()
     return true;
 }
 
-// #endif // HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}} // namespace cv::dnn::webgpu

@@ -246,7 +246,7 @@ private:
 #ifdef HAVE_WEBGPU
         if(haveWGPU())
             backends.push_back(std::make_pair(DNN_BACKEND_WGPU, DNN_TARGET_WGPU));
-#endif
+#endif  // HAVE_WEBGPU
 
 #ifdef HAVE_CUDA
         if (haveCUDA()) {
@@ -1283,7 +1283,7 @@ struct Net::Impl : public detail::NetImplBase
             {
 #ifdef HAVE_WEBGPU
                 return Ptr<BackendWrapper>(new WGPUBackendWrapper(baseBuffer, host));
-#endif
+#endif  // HAVE_WEBGPU
             }
             else if (preferableBackend == DNN_BACKEND_CUDA)
             {
@@ -2417,7 +2417,7 @@ struct Net::Impl : public detail::NetImplBase
                 ld.backendNodes[DNN_BACKEND_WGPU] = Ptr<BackendNode>();
             }
         }
-#endif
+#endif  // HAVE_WEBGPU
     }
 
     void initCUDABackend() {

@@ -6,7 +6,7 @@ namespace cv
 {
 namespace dnn
 {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 void copyToTensor(webgpu::Tensor &dst, const Mat &src)
 {
     CV_Assert(src.isContinuous() && src.type() == CV_32F);
@@ -120,8 +120,6 @@ bool WGPUBackendNode::forward(std::vector<webgpu::Tensor>& outs)
     return operation->forward(ins, blobs, outs);
 }
 
-// #endif  //HAVE_WEBGPU
-
 void setBackendWrappersDirty(std::vector<Ptr<BackendWrapper> >& ptrs)
 {
     for (const Ptr<BackendWrapper>& ptr : ptrs)
@@ -130,18 +128,19 @@ void setBackendWrappersDirty(std::vector<Ptr<BackendWrapper> >& ptrs)
     }
 }
 
+#endif  // HAVE_WEBGPU
+
 void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, 
                 const Ptr<BackendNode>& node) 
 {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
     CV_Assert(!node.empty());
 
     Ptr<WGPUBackendNode> node_ = node.dynamicCast<WGPUBackendNode>();
     std::vector<webgpu::Tensor> outs = WGPUTensors(outputs);
     node_->forward(outs);
     setBackendWrappersDirty(outputs);
-    
-// #endif
+#endif  // HAVE_WEBGPU
 }
 
     bool haveWGPU()

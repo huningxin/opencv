@@ -1,13 +1,12 @@
 #ifndef OPENCV_DNN_WEBGPU_TENSOR_HPP
 #define OPENCV_DNN_WEBGPU_TENSOR_HPP
-// #ifdef HAVE_WEBGPU
-#include<dawn/webgpu_cpp.h>
-// #endif
-#include"buffer.hpp"
-#include"wgpucom.hpp"
-#include<memory>
+#ifdef HAVE_WEBGPU
+#include <dawn/webgpu_cpp.h>
+#endif  // HAVE_WEBGPU
+#include "wgpucom.hpp"
+#include <memory>
 namespace cv { namespace dnn { namespace webgpu {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 class Buffer;
 class Tensor{
 public:
@@ -37,12 +36,12 @@ private:
     std::vector<int> shape_;
     size_t size_in_byte_;
     std::shared_ptr<Buffer> buffer_;
-    Format format_;
+    Format format_ = wFormatFp32;
     wgpu::BufferUsage usage_ = wgpu::BufferUsage::Storage | 
     wgpu::BufferUsage::CopySrc | wgpu::BufferUsage::CopyDst;
 };
 
-// #endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}}  //namespace cv::dnn:webgpu
 

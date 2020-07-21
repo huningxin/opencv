@@ -11,7 +11,17 @@
 
 namespace cv { namespace dnn { namespace webgpu {
 
+extern const unsigned int lrn_spv[1841];
+extern const unsigned int permute_spv[749];
+extern const unsigned int dw_conv_spv[1754];
+extern const unsigned int conv_spv[1888];
+extern const unsigned int relu_spv[498];
 extern const unsigned int softmax_spv[1500];
+extern const unsigned int avg_pool_spv[1538];
+extern const unsigned int conv48_spv[10161];
+extern const unsigned int concat_spv[541];
+extern const unsigned int prior_box_spv[1460];
+extern const unsigned int max_pool_spv[1445];
 
 }}} // namespace cv::dnn::webgpu
 

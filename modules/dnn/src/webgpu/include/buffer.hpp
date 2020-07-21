@@ -1,15 +1,16 @@
 #ifndef OPENCV_DNN_WEBGPU_BUFFER_HPP
 #define OPENCV_DNN_WEBGPU_BUFFER_HPP
-// #ifdef HAVE_WEBGPU
-#include <dawn/webgpu_cpp.h>
+
 #include <unistd.h>
 #include <memory>
-// #endif
-namespace cv { namespace dnn { namespace webgpu {
 
+#ifdef HAVE_WEBGPU
+#include <dawn/webgpu_cpp.h>
+#endif  // HAVE_WEBGPU
+namespace cv { namespace dnn { namespace webgpu {
+#ifdef HAVE_WEBGPU
 class Buffer 
 {
-// #ifdef HAVE_WEBGPU
 public:
     Buffer(const std::shared_ptr<wgpu::Device> device);
     Buffer(const std::shared_ptr<wgpu::Device> device, 
@@ -20,7 +21,7 @@ public:
            wgpu::BufferUsage usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst);
     ~Buffer() 
     {
-        if(buffer_) buffer_.Release();
+        buffer_.Release();
         if(gpuReadBuffer_) gpuReadBuffer_.Release();
     }
     wgpu::Buffer * getWebGPUBuffer() { return & buffer_; }
@@ -47,7 +48,7 @@ private:
     const void * mappedData = nullptr;
 };
 
-// #endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}}  //namespace cv::dnn::webgpu
 

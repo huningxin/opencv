@@ -2,9 +2,9 @@
 #define OPENCV_DNN_WEBGPU_CONTEXT_HPP
 
 namespace cv { namespace dnn { namespace webgpu {
+#ifdef HAVE_WEBGPU
 class Context
 {
-// #ifdef HAVE_WEBGPU
 
 public:
     Context();
@@ -13,7 +13,7 @@ public:
 
 void createContext();
 
-// #endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}}  // namespace cv::dnn::webgpu
 

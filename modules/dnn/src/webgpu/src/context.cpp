@@ -1,11 +1,10 @@
 #include "../../precomp.hpp"
 #include "common.hpp"
 #include "context.hpp"
-#include<dawn/webgpu_cpp.h>
 #include "../dawn/dawnUtils.hpp"
-#include <dawn_native/DawnNative.h>
+
 namespace cv { namespace dnn { namespace webgpu {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 
 std::shared_ptr<Context> wCtx;
 std::shared_ptr<wgpu::Device> wDevice;
@@ -48,6 +47,6 @@ Context::~Context()
     wQueue->Release();
 }
 
-// #endif
+#endif  // HAVE_WEBGPU
 
 }}}  // namespace cv::dnn::webgpu

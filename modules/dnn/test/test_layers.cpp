@@ -1629,6 +1629,208 @@ TEST(Layer_Test_PoolingIndices, Accuracy)
     normAssert(indices, outputs[1].reshape(1, 5));
 }
 
+TEST(WGPU_Test_Conv, Accuracy)
+{
+    Net nets[2];
+    for (int i = 0; i < 2; ++i)
+    {
+        nets[i].setInputsNames(std::vector<String>(1, format("input_%d", i)));
+
+        LayerParams lp;
+        lp.set("kernel_size", 1);
+        lp.set("num_output", 1);
+        lp.set("bias_term", false);
+        lp.type = "Convolution";
+        lp.name = format("testConv_%d", i);
+        lp.blobs.push_back(Mat({1, 1, 1, 1}, CV_32F, Scalar(1 + i)));
+        nets[i].addLayerToPrev(lp.name, lp.type, lp);
+        nets[i].setPreferableBackend(DNN_BACKEND_WGPU);
+        nets[i].setPreferableTarget(DNN_TARGET_WGPU);
+        nets[i].setInput(Mat({1, 1, 2, 3}, CV_32FC1, Scalar(1)));
+    }
+    Mat out_1 = nets[0].forward();
+    Mat out_2 = nets[1].forward();
+    // After the second model is initialized we try to receive an output from the first network again.
+    out_1 = nets[0].forward();
+    normAssert(2 * out_1, out_2);
+}
+
+TEST(WGPU_Test_Softmax, Accuracy)
+{
+    float inp[] = {1, 2, 3, 4, 5, 6, 7, 8};
+    float outExp[] = {0.032059, 0.087144, 0.236883, 0.643914, 0.032059, 0.087144, 0.236883, 0.643914};
+    LayerParams lp;
+    Net netSoftmax, netBase;
+    Mat in(2, 4, CV_32F, inp), outValue(2, 4, CV_32F, outExp);
+    Mat out, outBase;
+    lp.set("axis", 1);
+    lp.set("log_softmax", false);
+
+    netSoftmax.addLayerToPrev("softmaxLayer", "Softmax", lp);
+    netSoftmax.setPreferableBackend(DNN_BACKEND_WGPU);
+    netSoftmax.setPreferableTarget(DNN_TARGET_WGPU);
+    netSoftmax.setInput(in);
+    out = netSoftmax.forward();
+
+    netBase.addLayerToPrev("softmaxLayer", "Softmax", lp);
+    netBase.setPreferableBackend(DNN_BACKEND_OPENCV);
+    netBase.setPreferableTarget(DNN_TARGET_CPU);
+    netBase.setInput(in);
+    outBase = netBase.forward();
+    
+    normAssert(outValue, out);
+    normAssert(outValue, outBase);
+    normAssert(out, outBase);
+}
+
+TEST(WGPU_Test_Relu, Accuracy)
+{
+    Net net;
+    {
+        LayerParams lp;
+        lp.set("kernel_size", 1);
+        lp.set("num_output", 1);
+        lp.set("bias_term", false);
+        lp.type = "Convolution";
+        lp.name = "testConv";
+
+        int weightsShape[] = {1, 1, 1, 1};
+        Mat weights(4, &weightsShape[0], CV_32F, Scalar(1));
+        lp.blobs.push_back(weights);
+        net.addLayerToPrev(lp.name, lp.type, lp);
+    }
+    {
+        LayerParams lp;
+        lp.type = "ReLU";
+        lp.name = "testReLU";
+        net.addLayerToPrev(lp.name, lp.type, lp);
+    }
+    int sz[] = {1, 1, 2, 3};
+    Mat input(4, &sz[0], CV_32F);
+    randu(input, -1.0, -0.1);
+    net.setInput(input);
+    net.setPreferableBackend(DNN_BACKEND_WGPU);
+    net.setPreferableTarget(DNN_TARGET_WGPU);
+    Mat output = net.forward("testConv");
+    normAssert(input, output);
+}
+
+TEST(WGPU_Test_Concat, Accuracy)
+{
+    // Test case
+    // input
+    //   |
+    //   v
+    // some_layer
+    // |   |
+    // v   v
+    // concat
+    Net net;
+    int interLayer;
+    {
+        LayerParams lp;
+        lp.type = "AbsVal";
+        lp.name = "someLayer";
+        interLayer = net.addLayerToPrev(lp.name, lp.type, lp);
+    }
+    {
+        LayerParams lp;
+        lp.set("axis", 1);
+        lp.type = "Concat";
+        lp.name = "testConcat";
+        int id = net.addLayer(lp.name, lp.type, lp);
+        net.connect(interLayer, 0, id, 0);
+        net.connect(interLayer, 0, id, 1);
+    }
+    int shape[] = {1, 2, 3, 4};
+    Mat input(4, shape, CV_32F);
+    randu(input, 0.0f, 1.0f);  // [0, 1] to make AbsVal an identity transformation.
+
+    net.setInput(input);
+    net.setPreferableBackend(DNN_BACKEND_WGPU);
+    net.setPreferableTarget(DNN_TARGET_WGPU);
+    Mat out = net.forward();
+
+    normAssert(slice(out, Range::all(), Range(0, 2), Range::all(), Range::all()), input);
+    normAssert(slice(out, Range::all(), Range(2, 4), Range::all(), Range::all()), input);
+}
+
+TEST(WGPU_Test_AvgPool, Accuracy)
+{
+    LayerParams lp;
+    lp.name = "testAvePool";
+    lp.type = "Pooling";
+    lp.set("kernel_size", 2);
+    lp.set("stride", 2);
+    lp.set("pool", "AVE");
+
+    Net net, net0;
+    net.addLayerToPrev(lp.name, lp.type, lp);
+    // 1 2 | 3
+    // 4 5 | 6
+    // ----+--
+    // 7 8 | 9
+    Mat inp = (Mat_<float>(3, 3) << 1, 2, 3, 4, 5, 6, 7, 8, 9);
+    Mat ref = (Mat_<float>(2, 2) << (1 + 2 + 4 + 5) / 4.f, (3 + 6) / 2.f, (7 + 8) / 2.f, 9);
+    Mat tmp = blobFromImage(inp);
+    net.setInput(blobFromImage(inp));
+    net.setPreferableBackend(DNN_BACKEND_WGPU);
+    net.setPreferableTarget(DNN_TARGET_WGPU);
+    Mat out = net.forward();
+
+    net0.addLayerToPrev(lp.name, lp.type, lp);
+    net0.setInput(blobFromImage(inp));
+    net0.setPreferableBackend(DNN_BACKEND_OPENCV);
+    net0.setPreferableTarget(DNN_TARGET_CPU);
+    Mat out0 = net.forward();
+    normAssert(out, blobFromImage(ref));
+    normAssert(out, out0);
+}
+
+TEST(WGPU_Test_MaxPool, Accuracy)
+{
+    Net net;
+
+    LayerParams lp;
+    lp.set("pool", "max");
+    lp.set("kernel_w", 2);
+    lp.set("kernel_h", 2);
+    lp.set("stride_w", 2);
+    lp.set("stride_h", 2);
+    lp.set("pad_w", 0);
+    lp.set("pad_h", 0);
+    lp.name = "testLayer.name";  // This test also checks that OpenCV lets use names with dots.
+    lp.type = "Pooling";
+    net.addLayerToPrev(lp.name, lp.type, lp);
+
+    Mat inp(10, 10, CV_8U);
+    randu(inp, 0, 255);
+
+    Mat maxValues(5, 5, CV_32F, Scalar(-1)), indices(5, 5, CV_32F, Scalar(-1));
+    for (int y = 0; y < 10; ++y)
+    {
+        int dstY = y / 2;
+        for (int x = 0; x < 10; ++x)
+        {
+            int dstX = x / 2;
+            uint8_t val = inp.at<uint8_t>(y, x);
+            if ((float)inp.at<uint8_t>(y, x) > maxValues.at<float>(dstY, dstX))
+            {
+                maxValues.at<float>(dstY, dstX) = val;
+                indices.at<float>(dstY, dstX) = y * 10 + x;
+            }
+        }
+    }
+    net.setPreferableBackend(DNN_BACKEND_WGPU);
+    net.setPreferableTarget(DNN_TARGET_WGPU);
+    net.setInput(blobFromImage(inp));
+
+    std::vector<Mat> outputs;
+    net.forward(outputs, lp.name);
+    normAssert(maxValues, outputs[0].reshape(1, 5));
+    normAssert(indices, outputs[1].reshape(1, 5));
+}
+
 typedef testing::TestWithParam<tuple<Vec4i, int, tuple<Backend, Target> > > Layer_Test_ShuffleChannel;
 TEST_P(Layer_Test_ShuffleChannel, Accuracy)
 {

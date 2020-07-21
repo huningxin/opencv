@@ -11,7 +11,8 @@
 #include <vector>
 
 namespace cv { namespace dnn { namespace webgpu {
-//#ifndef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
+
 enum Format
 {
     wFormatInvalid = -1,
@@ -55,13 +56,20 @@ enum FusedActivationType
 
 typedef std::vector<int> Shape;
 bool isAvailable();
-//#endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}} //namespace cv::dnn::webgpu
 
-#include "tensor.hpp"
 #include "buffer.hpp"
+#include "tensor.hpp"
 #include "op_base.hpp"
+#include "op_concat.hpp"
+#include "op_conv.hpp"
+#include "op_lrn.hpp"
 #include "op_softmax.hpp"
+#include "op_relu.hpp"
+#include "op_pool.hpp"
+#include "op_prior_box.hpp"
+#include "op_permute.hpp"
 
 #endif//    OPENCV_DNN_WEBGPU_HPP

@@ -1,26 +1,20 @@
 #include <algorithm>
-// #ifdef HAVE_WEBGPU
-#include <dawn/dawn_proc.h>
-#include <dawn/dawn_wsi.h>
-#include <dawn_native/DawnNative.h>
-#include <dawn/webgpu_cpp.h>
-#include "opencv2/core/base.hpp"
-#include "dawnUtils.hpp"
-// #endif
 #include <cstring>
 #include <iomanip>
 #include <mutex>
 #include <sstream>
 #include <memory>
 #include <iostream>
+#include "dawnUtils.hpp"
+#include "opencv2/core/base.hpp"
 namespace cv { namespace dnn { namespace webgpu {
 
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 
 static dawn_native::Instance* instance;
 static wgpu::BackendType backendType = wgpu::BackendType::Vulkan;
 
-void PrintDeviceError(WGPUErrorType errorType,  const char* message, void*) {
+void PrintDeviceError(WGPUErrorType errorType, const char* message, void*) {
     String errorTypeName = "";
     switch (errorType) {
         case WGPUErrorType_Validation:
@@ -113,6 +107,6 @@ wgpu::BindGroupLayout MakeBindGroupLayout(
     return device.CreateBindGroupLayout(&descriptor);
 }
 
-// #endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}}  //namespace cv::dnn::webgpu

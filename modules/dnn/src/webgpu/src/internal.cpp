@@ -11,7 +11,7 @@
 
 namespace cv { namespace dnn { namespace webgpu {
 
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 
 // std::vector<uint32_t> compile(const std::string& name,
 //                               shaderc_shader_kind kind,
@@ -47,27 +47,19 @@ namespace cv { namespace dnn { namespace webgpu {
 void bindTensor(Tensor& tensor, uint32_t binding, 
                 std::vector<wgpu::BindGroupEntry>& bgEntries) 
 {
-    wgpu::BindGroupEntry bgEntry = {};
-    bgEntry.binding = binding;
-    bgEntry.buffer = * tensor.getBuffer()->getWebGPUBuffer();
-    bgEntry.offset = 0;
-    bgEntry.size = tensor.size();
-    bgEntry.sampler = nullptr;
-    bgEntry.textureView = nullptr;
-    bgEntries.push_back(bgEntry);
+    if(bgEntries.size() < binding)
+        CV_Error(Error::StsBadArg, "Binding buffer num does not match");
+    bgEntries.at(binding).buffer = * tensor.getBuffer()->getWebGPUBuffer();
+    bgEntries.at(binding).size = tensor.size();
 }
 
 void bindUniform(Buffer& buffer, uint32_t binding,
                  std::vector<wgpu::BindGroupEntry>& bgEntries)
 {
-    wgpu::BindGroupEntry bgEntry = {};
-    bgEntry.binding = binding;
-    bgEntry.buffer = * buffer.getWebGPUBuffer();
-    bgEntry.offset = 0;
-    bgEntry.size = buffer.getSize();
-    bgEntry.sampler = nullptr;
-    bgEntry.textureView = nullptr;
-    bgEntries.push_back(bgEntry);
+    if(bgEntries.size() < binding)
+        CV_Error(Error::StsBadArg, "Binding buffer num does not match");
+    bgEntries.at(binding).buffer = * buffer.getWebGPUBuffer();
+    bgEntries.at(binding).size = buffer.getSize();
 }
 
 void computeConvOutputShapeAndPadding(const PaddingMode& padding_mode,
@@ -157,7 +149,7 @@ void computePoolOutputShape(const PaddingMode& padding_mode,
     }
 }
 
-// #endif
+#endif  // HAVE_WEBGPU
 
 }}}     //namespace cv::dnn::webgpu
 

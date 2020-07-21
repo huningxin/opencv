@@ -14,7 +14,7 @@ typedef int shaderc_shader_kind;
 
 namespace cv { namespace dnn { namespace webgpu {
 
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 std::vector<uint32_t> compile(const std::string& name,
                               shaderc_shader_kind kind,
                               const std::string& data);
@@ -76,7 +76,7 @@ inline int shapeCount(const Shape& shape, int start = -1, int end = -1)
     }
     return elems;
 }
-// #endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}} //namespace::dnn::webgpu
 

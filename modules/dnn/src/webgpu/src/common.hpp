@@ -11,33 +11,65 @@
 #include <sstream>
 #include <algorithm>
 #include <memory>
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 #include <dawn/webgpu_cpp.h>
-// #endif
+#endif  // HAVE_WEBGPU
 #include "opencv2/core/utils/logger.hpp"
 #include "../shader/spv_shader.hpp"
-#include "../../precomp.hpp"
 #include "../include/wgpucom.hpp"
-#include "context.hpp"
 namespace cv { namespace dnn { namespace webgpu {
-
-// #ifdef HAVE_WEBGPU
-
+#ifdef HAVE_WEBGPU
 extern std::shared_ptr<wgpu::Device> wDevice;
 extern std::shared_ptr<wgpu::Queue> wQueue;
 extern cv::Mutex wContextMtx;
 
 enum ShapeIdx
 {
-    kShapeIdxBatch = 0,
-    kShapeIdxChannel,
-    kShapeIdxHeight,
-    kShapeIdxWidth,
+    wShapeIdxBatch = 0,
+    wShapeIdxChannel,
+    wShapeIdxHeight,
+    wShapeIdxWidth,
 };
 
+#define _CHECK_RESULT(f) \
+{ \
+        if (f != 0) \
+        { \
+            CV_LOG_ERROR(NULL, "check failed, result = " << (int)f); \
+            CV_Error(Error::StsError, "check failed"); \
+        } \
+}
 
-// #endif  //HAVE_WEBGPU
+#define WGPU_CHECK_BOOL_RET_VAL(val, ret) \
+{ \
+    bool res = (val); \
+    if (!res) \
+    { \
+        CV_LOG_WARNING(NULL, "Check bool failed"); \
+        return ret; \
+    } \
+}
 
-}}} // namespace cv::dnn::vkcom
+#define WGPU_CHECK_POINTER_RET_VOID(p) \
+{ \
+    if (NULL == (p)) \
+    { \
+        CV_LOG_WARNING(NULL, "Check pointer failed"); \
+        return; \
+    } \
+}
+
+#define WGPU_CHECK_POINTER_RET_VAL(p, val) \
+{ \
+    if (NULL == (p)) \
+    { \
+        CV_LOG_WARNING(NULL, "Check pointer failed"); \
+        return (val); \
+    } \
+}
+
+#endif  // HAVE_WEBGPU
+
+}}} // namespace cv::dnn::webgpu
 
 #endif // OPENCV_DNN_WEBGPU_COMMON_HPP

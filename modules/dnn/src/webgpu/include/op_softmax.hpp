@@ -4,7 +4,7 @@
 #include "op_base.hpp"
 namespace cv { namespace dnn { namespace webgpu {
 
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
 
 struct SoftmaxShaderConfig
 {
@@ -35,13 +35,13 @@ private:
     int channel_size_;
     int outer_size_;
     bool log_softmax_;
+    SoftmaxShaderConfig config_;
     Tensor* max_tensor_ = nullptr;
     Tensor* sum_tensor_ = nullptr;
-    Buffer* uniformBuffer_;
-    SoftmaxShaderConfig config_;
+    Buffer* uniformBuffer_ = nullptr;
 };
 
-// #endif // HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}} // namespace cv::dnn::webgpu
 

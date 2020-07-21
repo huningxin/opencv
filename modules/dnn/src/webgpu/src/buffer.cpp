@@ -1,10 +1,13 @@
-#include "../include/buffer.hpp"
-#include "../dawn/dawnUtils.hpp"
-#include "common.hpp"
 #include <string.h>
-namespace cv { namespace dnn { namespace webgpu {
-// #ifdef HAVE_WEBGPU
+#include "../dawn/dawnUtils.hpp"
+#include "../../precomp.hpp"
+#include "common.hpp"
+#include "internal.hpp"
+#include "../include/buffer.hpp"
 
+namespace cv { namespace dnn { namespace webgpu {
+
+#ifdef HAVE_WEBGPU
 Buffer::Buffer(std::shared_ptr<wgpu::Device> device)
 {
     device_ = device;
@@ -72,6 +75,6 @@ const void* Buffer::MapReadAsyncAndWait()
     return mappedData;
 }
 
-// #endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 }}}  //namespace cv::dnn::webgpu

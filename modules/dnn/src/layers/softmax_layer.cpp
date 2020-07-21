@@ -325,12 +325,12 @@ public:
 
     virtual Ptr<BackendNode> initWGPU(const std::vector<Ptr<BackendWrapper> > &inputs) CV_OVERRIDE
     {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
         webgpu::Tensor in = WGPUTensor(inputs[0]);
         int cAxis = clamp(axisRaw, in.dimNum());
         std::shared_ptr<webgpu::OpBase> op(new webgpu::OpSoftmax(cAxis, logSoftMax));
         return Ptr<BackendNode>(new WGPUBackendNode(inputs, op));
-// #endif  // HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
         return Ptr<BackendNode>();
     }
 

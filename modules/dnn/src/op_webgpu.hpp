@@ -2,15 +2,15 @@
 #define OPENCV_DNN_OP_WEBGPU_HPP
 
 #include <opencv2/dnn/shape_utils.hpp>
-// #ifdef HAVE_WEBGP&U
+#ifdef HAVE_WEBGPU
 #include "webgpu/include/wgpucom.hpp"
-// #endif  // HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
 namespace cv
 {
 namespace dnn
 {
-// #ifdef HAVE_WEBGPU
+#ifdef HAVE_WEBGPU
     std::vector<webgpu::Tensor> WGPUTensors(
         const std::vector<Ptr<BackendWrapper> >& ptrs);
     webgpu::Tensor WGPUTensor(const Ptr<BackendWrapper>& ptr);
@@ -53,7 +53,7 @@ namespace dnn
         std::vector<Ptr<BackendWrapper> > inputsWrapper_;
         std::shared_ptr<webgpu::OpBase> operation;
     };
-// #endif  //HAVE_WEBGPU
+#endif  // HAVE_WEBGPU
 
     void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, 
                     const Ptr<BackendNode>& node);
