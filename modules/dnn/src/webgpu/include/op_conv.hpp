@@ -67,7 +67,7 @@ private:
     PaddingMode padding_mode_;
     int group_;
     int has_bias_;
-    Tensor* swizzled_weights;
+    Tensor* swizzled_weights = nullptr;
     ConvShaderConfig config_;
     bool dwconv_;
     Buffer* uniformBuffer_ = nullptr;

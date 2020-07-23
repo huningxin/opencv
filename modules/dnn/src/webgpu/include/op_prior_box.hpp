@@ -44,11 +44,11 @@ private:
     int in_w_;
     int out_channel_;
     int out_channel_size_;
-    Tensor* tensor_offsets_x_;
-    Tensor* tensor_offsets_y_;
-    Tensor* tensor_widths_;
-    Tensor* tensor_heights_;
-    Tensor* tensor_variance_;
+    Tensor* tensor_offsets_x_= nullptr;
+    Tensor* tensor_offsets_y_= nullptr;
+    Tensor* tensor_widths_= nullptr;
+    Tensor* tensor_heights_= nullptr;
+    Tensor* tensor_variance_= nullptr;
     Buffer* uniformBuffer_ = nullptr;
 };
 

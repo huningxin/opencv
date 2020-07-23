@@ -113,9 +113,7 @@ bool OpConv::init(const int out_channel, const bool has_bias,
     has_bias_ = has_bias ? 1 : 0;
     activation_ = activation;
     group_ = group;
-
-    #define BUFFER_NUM 4
-    OpBase::createBindGroupLayout(BUFFER_NUM);
+    createBindGroupLayout(4);
     return true;
 }
 

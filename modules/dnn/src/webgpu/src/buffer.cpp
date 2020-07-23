@@ -62,15 +62,13 @@ const void* Buffer::MapReadAsyncAndWait()
     encoder.CopyBufferToBuffer(buffer_, 0, 
                                gpuReadBuffer_, 0, size_);
     wgpu::CommandBuffer cmdBuffer = encoder.Finish();
-    encoder.Release();
     wQueue->Submit(1, &cmdBuffer);
+    encoder.Release();
     cmdBuffer.Release();
     gpuReadBuffer_.MapReadAsync(BufferMapReadCallback, this);
-    usleep(100);
     while(mappedData == nullptr) 
     {
         device_->Tick();
-        usleep(100);
     }
     return mappedData;
 }

@@ -43,8 +43,7 @@ OpPriorBox::OpPriorBox(float step_x,
     box_widths_ = box_widths;
     box_heights_ = box_heights;
     type_ = "PriorBox";
-#define BUFFER_NUM 6
-    OpBase::createBindGroupLayout(BUFFER_NUM);
+    createBindGroupLayout(6);
 }
 
 OpPriorBox::~OpPriorBox()

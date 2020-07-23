@@ -21,7 +21,7 @@ public:
            wgpu::BufferUsage usage = wgpu::BufferUsage::Uniform | wgpu::BufferUsage::CopyDst);
     ~Buffer() 
     {
-        buffer_.Release();
+        if(buffer_) buffer_.Release();
         if(gpuReadBuffer_) gpuReadBuffer_.Release();
     }
     wgpu::Buffer * getWebGPUBuffer() { return & buffer_; }
@@ -42,7 +42,7 @@ private:
     Buffer();
     std::shared_ptr<wgpu::Device> device_;
     wgpu::Buffer buffer_;
-    wgpu::Buffer gpuReadBuffer_ = nullptr;
+    wgpu::Buffer gpuReadBuffer_;
     wgpu::BufferUsage usage_;
     size_t size_;
     const void * mappedData = nullptr;

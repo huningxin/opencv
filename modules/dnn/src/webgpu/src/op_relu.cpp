@@ -16,7 +16,7 @@ struct ReLUParam {
 
 OpReLU::OpReLU(const float slope) : slope_(slope)
 {
-    OpBase::createBindGroupLayout(2);
+    createBindGroupLayout(2);
     type_ = "ReLU";
 }
 

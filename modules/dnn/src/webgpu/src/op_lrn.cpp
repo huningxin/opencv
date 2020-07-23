@@ -52,7 +52,7 @@ bool OpLRN::init(const int radius, const float bias,
     alpha_ = alpha;
     beta_  = beta;
     norm_by_size_ = norm_by_size;
-    OpBase::createBindGroupLayout(2);
+    createBindGroupLayout(2);
     return true;
 }
 

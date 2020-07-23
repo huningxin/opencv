@@ -25,9 +25,9 @@ private:
     int global_size_;
     int nthreads_;
     int dims_;
-    Tensor* tensor_order_;
-    Tensor* tensor_old_stride_;
-    Tensor* tensor_new_stride_;
+    Tensor* tensor_order_ = nullptr;
+    Tensor* tensor_old_stride_ = nullptr;
+    Tensor* tensor_new_stride_ = nullptr;
     std::vector<int> old_stride_;
     std::vector<int> new_stride_;
     Shape in_shape_;

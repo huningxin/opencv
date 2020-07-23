@@ -30,8 +30,7 @@ OpConcat::~OpConcat()
 bool OpConcat::init(const int axis)
 {
     axis_ = axis;
-#define BUFFER_NUM 2
-    OpBase::createBindGroupLayout(BUFFER_NUM);
+    createBindGroupLayout(2);
     return true;
 }
 
@@ -114,7 +113,7 @@ bool OpConcat::forward(std::vector<Tensor>& ins, Tensor& out)
                              thread_num_};
         if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(ConcatParam));
         else uniformBuffer_->setBufferData(&param, sizeof(ConcatParam));
-        bindUniform(* uniformBuffer_, BUFFER_NUM, bgEntries);
+        bindUniform(* uniformBuffer_, 2, bgEntries);
         createBindGroup();
         createCommandBuffer();
         runCommandBuffer();
