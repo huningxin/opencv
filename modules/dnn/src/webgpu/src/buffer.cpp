@@ -25,6 +25,7 @@ Buffer::Buffer(std::shared_ptr<wgpu::Device> device,
     wgpu::BufferDescriptor descriptor = {};
     descriptor.size = size;
     descriptor.usage = usage;
+    WGPU_CHECK_POINTER_RET_VOID(device_);
     buffer_ = device_->CreateBuffer(& descriptor);
     if(data) buffer_.SetSubData(0, size_, data);
 }
@@ -39,6 +40,7 @@ Buffer::Buffer(const void* data, size_t size,
     wgpu::BufferDescriptor descriptor = {};
     descriptor.size = size;
     descriptor.usage = usage;
+    WGPU_CHECK_POINTER_RET_VOID(device_)
     buffer_ = device_->CreateBuffer(& descriptor);
     if(data) buffer_.SetSubData(0, size_, data);
 }
@@ -51,6 +53,7 @@ void Buffer::setBufferData(const void * data, size_t size)
 
 const void* Buffer::MapReadAsyncAndWait() 
 {
+    if(size_ == 0) CV_Error(Error::StsError, "GPU buffer is null");
     if(! gpuReadBuffer_)
     {
         wgpu::BufferDescriptor desc = {};

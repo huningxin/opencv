@@ -42,8 +42,7 @@ std::vector<webgpu::Tensor>  WGPUTensors(const std::vector<Ptr<BackendWrapper> >
     return vec;
 }
 
-WGPUBackendWrapper::WGPUBackendWrapper(Mat& m) 
-: BackendWrapper(DNN_BACKEND_WGPU, DNN_TARGET_WGPU)
+WGPUBackendWrapper::WGPUBackendWrapper(Mat& m) : BackendWrapper(DNN_BACKEND_WGPU, DNN_TARGET_WGPU)
 {
     copyToTensor(tensor, m);
     host = &m;

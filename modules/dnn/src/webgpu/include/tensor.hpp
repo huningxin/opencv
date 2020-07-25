@@ -24,8 +24,7 @@ public:
     // Allocate new internal buffer if new size > old size or alloc flag is true
     Tensor reshape(const void* data, const std::vector<int>& shape, 
                    bool alloc = false, 
-                   Format fmt = wFormatInvalid);
-    Tensor fillData(const void * data);
+                   Format fmt = wFormatFp32);
     int getFormat() const;
     size_t size() const { return size_in_byte_; }
     bool isEmpty() { return size_in_byte_ == 0 ? true : false; }

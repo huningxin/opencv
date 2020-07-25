@@ -1,4 +1,4 @@
-#include "dawn/webgpu_cpp.h"
+#include <dawn/webgpu_cpp.h>
 namespace wgpu {
     static_assert(sizeof(AdapterType) == sizeof(WGPUAdapterType), "sizeof mismatch for AdapterType");
     static_assert(alignof(AdapterType) == alignof(WGPUAdapterType), "alignof mismatch for AdapterType");

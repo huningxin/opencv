@@ -69,18 +69,7 @@ Tensor Tensor::reshape(const void* data, const std::vector<int>& shape,
     if (alloc || new_size > size_in_byte_)
         alloc = true;
     size_in_byte_ = new_size;
-    if(alloc)
-    {
-        buffer_.reset(new Buffer(device_, data, size_in_byte_, usage_));
-        return * this;
-    }
-    fillData(data);
-    return * this;
-}
-
-Tensor Tensor::fillData(const void * data) 
-{
-    if (!buffer_)
+    if(alloc || !buffer_)
     {
         buffer_.reset(new Buffer(device_, data, size_in_byte_, usage_));
     }
@@ -88,7 +77,7 @@ Tensor Tensor::fillData(const void * data)
     {
         buffer_->setBufferData(data, size_in_byte_);
     }
-     return * this;
+    return * this;
 }
 
 int Tensor::getFormat() const

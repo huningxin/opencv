@@ -31,15 +31,6 @@ enum ShapeIdx
     wShapeIdxWidth,
 };
 
-#define _CHECK_RESULT(f) \
-{ \
-        if (f != 0) \
-        { \
-            CV_LOG_ERROR(NULL, "check failed, result = " << (int)f); \
-            CV_Error(Error::StsError, "check failed"); \
-        } \
-}
-
 #define WGPU_CHECK_BOOL_RET_VAL(val, ret) \
 { \
     bool res = (val); \
