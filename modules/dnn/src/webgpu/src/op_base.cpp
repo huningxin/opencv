@@ -128,6 +128,7 @@ void OpBase::runCommandBuffer()
 {
     cv::AutoLock lock(wContextMtx);
     wQueue->Submit(1, &cmd_buffer_);
+    cmd_buffer_.Release();
 }
 
 #endif  // HAVE_WEBGPU

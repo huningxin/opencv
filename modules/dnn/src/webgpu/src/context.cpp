@@ -15,7 +15,7 @@ cv::Mutex wContextMtx;
 void createContext()
 {
     cv::AutoLock lock(wContextMtx);
-    if (!wCtx && !wDevice)
+    if (!wCtx || !wDevice)
     {
         wCtx.reset(new Context());
     }

@@ -164,7 +164,30 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
             config_.block_height = 4;
             config_.block_width  = 8;
             createShaderModule(conv48_spv, sizeof(conv48_spv)/sizeof(uint32_t));
-        }
+            ShaderConstant shader_constant;
+            shader_constant.lsz_x = config_.local_size_x;
+            shader_constant.lsz_y = config_.local_size_y;
+            shader_constant.lsz_z = config_.local_size_z;
+            shader_constant.in_h  = in_height_;
+            shader_constant.in_w  = in_width_;
+            shader_constant.out_w = out_width_;
+            shader_constant.stride_h = stride_height_;
+            shader_constant.stride_w = stride_width_;
+            shader_constant.pad_h = padding_top_;
+            shader_constant.pad_w = padding_left_;
+            shader_constant.filter_h = filter_height_;
+            shader_constant.filter_w = filter_width_;
+            shader_constant.channels = in_channel_;
+            shader_constant.batch = batch_;
+            shader_constant.m = M;
+            shader_constant.k = K;
+            shader_constant.n = N;
+            shader_constant.tail_m = M % 4;
+            shader_constant.dilation_h = dilation_height_;
+            shader_constant.dilation_w = dilation_width_;
+            if(! uniformBuffer_) { uniformBuffer_ = new Buffer(&shader_constant, sizeof(ShaderConstant));}
+            else { CV_Error(Error::StsError, "break point"); uniformBuffer_->setBufferData(&shader_constant, sizeof(ShaderConstant)); }
+        } 
         else if (out_channel_ == in_channel_ && in_channel_ == group_)
         {
             config_.shader_type  = wConvShaderTypeDepthWise;
@@ -212,31 +235,6 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
         }
         if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(ShaderParam));
         else uniformBuffer_->setBufferData(&param, sizeof(ShaderParam));
-    } else if(config_.shader_type == wConvShaderType48)
-    {
-        ShaderConstant shader_constant;
-        shader_constant.lsz_x = config_.local_size_x;
-        shader_constant.lsz_y = config_.local_size_y;
-        shader_constant.lsz_z = config_.local_size_z;
-        shader_constant.in_h  = in_height_;
-        shader_constant.in_w  = in_width_;
-        shader_constant.out_w = out_width_;
-        shader_constant.stride_h = stride_height_;
-        shader_constant.stride_w = stride_width_;
-        shader_constant.pad_h = padding_top_;
-        shader_constant.pad_w = padding_left_;
-        shader_constant.filter_h = filter_height_;
-        shader_constant.filter_w = filter_width_;
-        shader_constant.channels = in_channel_;
-        shader_constant.batch = batch_;
-        shader_constant.m = M;
-        shader_constant.k = K;
-        shader_constant.n = N;
-        shader_constant.tail_m = M % 4;
-        shader_constant.dilation_h = dilation_height_;
-        shader_constant.dilation_w = dilation_width_;
-        if(! uniformBuffer_) uniformBuffer_ = new Buffer(&shader_constant, sizeof(ShaderConstant));
-        else uniformBuffer_->setBufferData(&shader_constant, sizeof(ShaderConstant));
     }
 
     bindUniform(*uniformBuffer_, 4, bgEntries);
