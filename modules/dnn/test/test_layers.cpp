@@ -1831,6 +1831,120 @@ TEST(WGPU_Test_MaxPool, Accuracy)
     normAssert(indices, outputs[1].reshape(1, 5));
 }
 
+static std::string path(const std::string& file)
+{
+    return findDataFile("dnn/tensorflow/" + file);
+}
+
+static void testIO(cv::Mat input)
+{
+    LayerParams lp;
+    float negativeSlope = 1.0;
+    double default_l1 = 1e-05;
+    double default_lInf = 1e-04;
+    lp.set("negative_slope", negativeSlope);
+    lp.type = "ReLU";
+    lp.name = "testLayer";
+
+    Net net0 ,net1;
+    net0.addLayerToPrev(lp.name, lp.type, lp);
+    net0.setPreferableBackend(DNN_BACKEND_VKCOM);
+    net0.setPreferableTarget(DNN_TARGET_VULKAN);
+    net0.setInput(input);
+    Mat out0 = net0.forward();
+
+    net1.addLayerToPrev(lp.name, lp.type, lp);
+    net1.setPreferableBackend(DNN_BACKEND_WGPU);
+    net1.setPreferableTarget(DNN_TARGET_WGPU);
+    net1.setInput(input);
+    Mat out1 = net1.forward();
+    normAssert(input, out0, "", default_l1, default_lInf);
+    normAssert(input, out1, "", default_l1, default_lInf);
+}
+
+TEST(testWGPUIO, Accuracy)
+{
+    const std::string prefix = "atrous_conv2d_valid";
+    {
+        std::string inpPath = path(prefix + "_in.npy");
+        std::string outPath = path(prefix + "_out.npy");
+
+        cv::Mat input = blobFromNPY(inpPath);
+        cv::Mat ref = blobFromNPY(outPath);
+        testIO(input);
+        testIO(ref);
+    }
+}
+
+TEST(DarknetLayer, Accuracy)
+{
+    double default_l1 = 0.01f, default_lInf = 0.1f;
+    const std::string name = "mish";
+    bool hasWeights = true;
+    bool testBatchProcessing = true;
+    Backend backend = DNN_BACKEND_WGPU;
+    Target target = DNN_TARGET_WGPU;
+
+    SCOPED_TRACE(name);
+    Mat inp = blobFromNPY(findDataFile("dnn/darknet/" + name + "_in.npy"));
+    Mat ref = blobFromNPY(findDataFile("dnn/darknet/" + name + "_out.npy"));
+
+    std::string cfg = findDataFile("dnn/darknet/" + name + ".cfg");
+    std::string model = "";
+    if (hasWeights)
+        model = findDataFile("dnn/darknet/" + name + ".weights");
+
+    Net net = readNet(cfg, model);
+    net.setPreferableBackend(backend);
+    net.setPreferableTarget(target);
+    net.setInput(inp);
+    Mat out = net.forward();
+    normAssert(out, ref, "", default_l1, default_lInf);
+
+    if (inp.size[0] == 1 && testBatchProcessing)  // test handling of batch size
+    {
+        SCOPED_TRACE("batch size 2");
+
+#if defined(INF_ENGINE_RELEASE)
+        if (target == DNN_TARGET_MYRIAD && name == "shortcut")
+            applyTestTag(CV_TEST_TAG_DNN_SKIP_IE_MYRIAD);
+#endif
+
+        std::vector<int> sz2 = shape(inp);
+        sz2[0] = 2;
+
+        Net net2 = readNet(cfg, model);
+        net2.setPreferableBackend(DNN_BACKEND_WGPU);
+        net2.setPreferableTarget(DNN_TARGET_WGPU);
+        Range ranges0[4] = { Range(0, 1), Range::all(), Range::all(), Range::all() };
+        Range ranges1[4] = { Range(1, 2), Range::all(), Range::all(), Range::all() };
+        Mat inp2(sz2, inp.type(), Scalar::all(0));
+        inp.copyTo(inp2(ranges0));
+        inp.copyTo(inp2(ranges1));
+        testIO(inp2);
+        
+        net2.setInput(inp2);
+        Mat out2 = net2.forward();
+        EXPECT_EQ(0, cv::norm(out2(ranges0), out2(ranges1), NORM_INF)) << "Batch result is not equal: " << name;
+
+        Mat ref2 = ref;
+        if (ref.dims == 2 && out2.dims == 3)
+        {
+            int ref_3d_sizes[3] = {1, ref.rows, ref.cols};
+            ref2 = Mat(3, ref_3d_sizes, ref.type(), (void*)ref.data);
+        }
+        /*else if (ref.dims == 3 && out2.dims == 4)
+        {
+            int ref_4d_sizes[4] = {1, ref.size[0], ref.size[1], ref.size[2]};
+            ref2 = Mat(4, ref_4d_sizes, ref.type(), (void*)ref.data);
+        }*/
+        ASSERT_EQ(out2.dims, ref2.dims) << ref.dims;
+
+        normAssert(out2(ranges0), ref2, "", default_l1, default_lInf);
+        normAssert(out2(ranges1), ref2, "", default_l1, default_lInf);
+    }
+}
+
 typedef testing::TestWithParam<tuple<Vec4i, int, tuple<Backend, Target> > > Layer_Test_ShuffleChannel;
 TEST_P(Layer_Test_ShuffleChannel, Accuracy)
 {
