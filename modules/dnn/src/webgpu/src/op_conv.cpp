@@ -186,8 +186,8 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
             shader_constant.dilation_h = dilation_height_;
             shader_constant.dilation_w = dilation_width_;
             if(! uniformBuffer_) { uniformBuffer_ = new Buffer(&shader_constant, sizeof(ShaderConstant));}
-            else { CV_Error(Error::StsError, "break point"); uniformBuffer_->setBufferData(&shader_constant, sizeof(ShaderConstant)); }
-        } 
+            else uniformBuffer_->setBufferData(&shader_constant, sizeof(ShaderConstant));
+        }
         else if (out_channel_ == in_channel_ && in_channel_ == group_)
         {
             config_.shader_type  = wConvShaderTypeDepthWise;
@@ -207,17 +207,16 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
     bindTensor(bias, 1, bgEntries);
     bindTensor(filter_weights, 2, bgEntries);
     bindTensor(out, 3, bgEntries);
-
     if (config_.shader_type == wConvShaderTypeBasic || config_.shader_type == wConvShaderTypeDepthWise)
     {
         ShaderParam param = {in_height_, in_width_,
-                        out_height_, out_width_,
-                        stride_height_, stride_width_,
-                        padding_top_, padding_left_,
-                        filter_height_, filter_width_,
-                        dilation_height_, dilation_width_,
-                        in_channel_, batch_, has_bias_,
-                        M, K, N, 0, 0, 0};
+                            out_height_, out_width_,
+                            stride_height_, stride_width_,
+                            padding_top_, padding_left_,
+                            filter_height_, filter_width_,
+                            dilation_height_, dilation_width_,
+                            in_channel_, batch_, has_bias_,
+                            M, K, N, 0, 0, 0};
         int partition_num = 1;
         if (config_.shader_type == wConvShaderTypeBasic)
         {
@@ -231,17 +230,24 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
             for (int n = 0;  n < partition_num; n++)
             {
                 param.basic_shader_partition_idx = n;
+                if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(ShaderParam));
+                else uniformBuffer_->setBufferData(&param, sizeof(ShaderParam));
+                bindUniform(*uniformBuffer_, 4, bgEntries);
+
+                createBindGroup();
+                createCommandBuffer();
+                runCommandBuffer();
             }
         }
-        if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(ShaderParam));
-        else uniformBuffer_->setBufferData(&param, sizeof(ShaderParam));
     }
+    else
+    {
+        bindUniform(*uniformBuffer_, 4, bgEntries);
 
-    bindUniform(*uniformBuffer_, 4, bgEntries);
-
-    createBindGroup();
-    createCommandBuffer();
-    runCommandBuffer();
+        createBindGroup();
+        createCommandBuffer();
+        runCommandBuffer();
+    }
     return true;
 }
 
