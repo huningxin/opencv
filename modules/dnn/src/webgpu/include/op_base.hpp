@@ -27,16 +27,14 @@ protected:
     void createComputePipeline();
     void createCommandBuffer();
     void runCommandBuffer();
-    wgpu::FenceCompletionStatus WaitForCompletedValue(wgpu::Fence fence, 
-                                                      uint64_t completedValue);
     
     std::shared_ptr<wgpu::Device> device_;
-    wgpu::ComputePipeline pipeline_;
-    wgpu::CommandBuffer cmd_buffer_;
-    wgpu::BindGroupLayout bindgrouplayout_;
-    wgpu::BindGroup bindgroup_;
-    wgpu::ShaderModule module_;
-    wgpu::PipelineLayout pipeline_layout_;
+    wgpu::ComputePipeline pipeline_ = nullptr;
+    wgpu::CommandBuffer cmd_buffer_= nullptr;
+    wgpu::BindGroupLayout bindgrouplayout_= nullptr;
+    wgpu::BindGroup bindgroup_= nullptr;
+    wgpu::ShaderModule module_= nullptr;
+    wgpu::PipelineLayout pipeline_layout_= nullptr;
     std::vector<wgpu::BindGroupEntry> bgEntries = {};
 
     uint32_t group_x_;

@@ -233,7 +233,6 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
                 if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(ShaderParam));
                 else uniformBuffer_->setBufferData(&param, sizeof(ShaderParam));
                 bindUniform(*uniformBuffer_, 4, bgEntries);
-
                 createBindGroup();
                 createCommandBuffer();
                 runCommandBuffer();
@@ -243,7 +242,6 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
     else
     {
         bindUniform(*uniformBuffer_, 4, bgEntries);
-
         createBindGroup();
         createCommandBuffer();
         runCommandBuffer();
