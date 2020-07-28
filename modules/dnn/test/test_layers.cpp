@@ -1629,51 +1629,45 @@ TEST(Layer_Test_PoolingIndices, Accuracy)
     normAssert(indices, outputs[1].reshape(1, 5));
 }
 
-void testCaffeLayer(const String& basename, int layer)
+static std::string path(const std::string& file)
 {
-    String prototxt = _tf(basename + ".prototxt");
-    String caffemodel = _tf(basename + ".caffemodel");
-    String inp_name = "input";
-    std::vector<Mat> inps, refs, outs0, outs1;
+    return findDataFile("dnn/tensorflow/" + file);
+}
+void runTensorFlowNet(const std::string& prefix, int layer)
+{
+    std::string netPath = path(prefix + "_net.pb");
+    std::string netConfig = "";
+    std::string inpPath = path(prefix + "_in.npy");
+    std::string outPath = path(prefix + "_out.npy");
 
-    String inpfile = _tf(basename + ".input.npy");
-    inps.push_back(blobFromNPY(inpfile));
+    cv::Mat input = blobFromNPY(inpPath);
+    cv::Mat ref = blobFromNPY(outPath);
 
-    String outfile = _tf(basename + ".npy");
-    refs.push_back(blobFromNPY(outfile));
-
-    Net net0 = readNetFromCaffe(prototxt, caffemodel);
-    ASSERT_FALSE(net0.empty());
+    Net net0, net1;
+    net0 = readNetFromTensorflow(netPath, netConfig);
     net0.setPreferableBackend(DNN_BACKEND_WGPU);
     net0.setPreferableTarget(DNN_TARGET_WGPU);
-    net0.setInput(inps.back(), inp_name);
+    net0.setInput(input);
     for(int i = 0; i < net0.getLayerNames().size(); i++) 
     {
         std::cout<<net0.getLayerNames().at(i)<<std::endl;
     }
     std::cout<<"Compute to :"<<net0.getLayerNames().at(layer)<<std::endl;
-    net0.forward(outs0, net0.getLayerNames().at(layer));
-    
-    Net net1 = readNetFromCaffe(prototxt, caffemodel);
-    ASSERT_FALSE(net1.empty());
+    cv::Mat out0 = net0.forward(net0.getLayerNames().at(layer));
+    net1 = readNetFromTensorflow(netPath, netConfig);
     net1.setPreferableBackend(DNN_BACKEND_VKCOM);
     net1.setPreferableTarget(DNN_TARGET_VULKAN);
-    net1.setInput(inps.back(), inp_name);
-    net1.forward(outs1, net1.getLayerNames().at(layer));
-    for (int i = 0; i < outs0.size(); i++)
-    {
-        normAssert(outs0[i], outs1[i], "", 1e-05, 1e-04);
-    }
+    net1.setInput(input);
+    cv::Mat out1 = net1.forward(net1.getLayerNames().at(layer));
+    normAssert(out0, out1, "", 1e-05, 1e-04);
 }
 
-TEST(testCaffeLayers, Accuracy)
+TEST(testTFLayer, Accuracy)
 {
-    testCaffeLayer("layer_concat_shared_input", 0);
-    testCaffeLayer("layer_concat_shared_input", 1);
-    testCaffeLayer("layer_concat_shared_input", 2);
-    testCaffeLayer("layer_concat_shared_input", 3);
-    testCaffeLayer("layer_concat_shared_input", 4);
-    testCaffeLayer("layer_concat_shared_input", 5);
+    for(int i = 0; i <= 7; i++)
+    {
+        runTensorFlowNet("slim_batch_norm", i);
+    }
 }
 
 typedef testing::TestWithParam<tuple<Vec4i, int, tuple<Backend, Target> > > Layer_Test_ShuffleChannel;
