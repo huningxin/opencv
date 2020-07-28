@@ -18,7 +18,6 @@ extern const unsigned int conv_spv[1888];
 extern const unsigned int relu_spv[498];
 extern const unsigned int softmax_spv[1500];
 extern const unsigned int avg_pool_spv[1538];
-extern const unsigned int conv48_spv[10161];
 extern const unsigned int concat_spv[541];
 extern const unsigned int prior_box_spv[1460];
 extern const unsigned int max_pool_spv[1445];

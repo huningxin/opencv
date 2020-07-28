@@ -10,7 +10,6 @@ namespace cv { namespace dnn { namespace webgpu {
 enum ConvShaderType
 {
     wConvShaderTypeBasic = 0,
-    wConvShaderType48,
     wConvShaderTypeDepthWise,
     wConvShaderTypeNum
 };
