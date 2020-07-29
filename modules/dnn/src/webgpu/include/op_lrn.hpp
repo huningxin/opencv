@@ -30,7 +30,6 @@ public:
     OpLRN(const int radius, const float bias,
           const float alpha, const float beta,
           const bool norm_by_size);
-    ~OpLRN();
     void reshapeOutTensor(Tensor& in, Tensor& out);
     bool forward(Tensor& in, Tensor& out);
     virtual bool forward(std::vector<Tensor>& ins,
@@ -54,7 +53,6 @@ private:
     int thread_num_;
     bool norm_by_size_;
     LRNShaderConfig config_;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

@@ -49,7 +49,6 @@ private:
     Tensor* tensor_widths_= nullptr;
     Tensor* tensor_heights_= nullptr;
     Tensor* tensor_variance_= nullptr;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

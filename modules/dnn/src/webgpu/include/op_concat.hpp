@@ -21,7 +21,6 @@ class OpConcat: public OpBase
 {
 public:
     OpConcat(const int axis);
-    ~OpConcat();
     bool forward(std::vector<Tensor>& ins, Tensor& out);
     void reshapeOutTensor(std::vector<Tensor *>& in, Tensor& out);
     virtual bool forward(std::vector<Tensor>& ins,
@@ -38,7 +37,6 @@ private:
     int concat_size_;
     int total_concat_size_;
     int thread_num_;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

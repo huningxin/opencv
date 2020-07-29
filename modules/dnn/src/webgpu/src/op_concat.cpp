@@ -22,11 +22,7 @@ OpConcat::OpConcat(const int axis)
     init(axis);
     type_ = "Concat";
 }
-OpConcat::~OpConcat()
-{
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
-}
+
 bool OpConcat::init(const int axis)
 {
     axis_ = axis;

@@ -31,8 +31,6 @@ OpSoftmax::~OpSoftmax()
         delete max_tensor_;
     if (sum_tensor_)
         delete sum_tensor_;
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
 }
 
 void OpSoftmax::reshapeOutTensor(Tensor& in, Tensor& out)

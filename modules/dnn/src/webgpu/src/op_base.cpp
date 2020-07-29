@@ -21,12 +21,13 @@ OpBase::OpBase()
 
 OpBase::~OpBase()
 {
-    module_.Release();
-    bindgrouplayout_.Release();
-    bindgroup_.Release();
-    pipeline_.Release();
-    pipeline_layout_.Release();
-    cmd_buffer_.Release();
+    if(module_) module_.Release();
+    if(bindgrouplayout_) bindgrouplayout_.Release();
+    if(bindgroup_) bindgroup_.Release();
+    if(pipeline_layout_) pipeline_layout_.Release();
+    if(pipeline_) pipeline_.Release();
+    if(cmd_buffer_) cmd_buffer_.Release();
+    if(uniformBuffer_) uniformBuffer_->getWebGPUBuffer()->Release();
 }
 
 void OpBase::createBindGroupLayout(int buffer_num) 

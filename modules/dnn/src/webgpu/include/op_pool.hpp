@@ -24,7 +24,6 @@ public:
     OpPool(const int* filter_size, const int* pad, const int* stride,
            const int padding_mode, const PoolType pool_type,
            const bool avg_pool_padded_area);
-    ~OpPool();
     bool forward(Tensor& in, Tensor& out, Tensor& mask);
     void reshapeOutTensor(Tensor& in, Tensor& out);
     virtual bool forward(std::vector<Tensor>& ins,
@@ -53,7 +52,6 @@ private:
     PaddingMode padding_mode_;
     //int activation_;
     PoolShaderConfig config_;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

@@ -482,7 +482,6 @@ public:
     }
 #endif  // HAVE_WEBGPU
 
-
     virtual Ptr<BackendNode> initHalide(const std::vector<Ptr<BackendWrapper> > &inputs) CV_OVERRIDE
     {
         if (type == MAX)

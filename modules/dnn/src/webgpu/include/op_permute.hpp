@@ -32,7 +32,6 @@ private:
     std::vector<int> new_stride_;
     Shape in_shape_;
     Shape out_shape_;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

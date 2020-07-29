@@ -10,7 +10,6 @@ class OpReLU: public OpBase
 {
 public:
     OpReLU(const float slope = 1.f);
-    ~OpReLU();
     bool forward(Tensor& in, Tensor& out);
     void reshapeOutTensor(Tensor& in, Tensor& out);
     virtual bool forward(std::vector<Tensor>& ins,
@@ -20,7 +19,6 @@ private:
     bool computeGroupCount();
     int total_;
     float slope_;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

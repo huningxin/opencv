@@ -36,6 +36,7 @@ protected:
     wgpu::ShaderModule module_= nullptr;
     wgpu::PipelineLayout pipeline_layout_= nullptr;
     std::vector<wgpu::BindGroupEntry> bgEntries = {};
+    Buffer* uniformBuffer_ = nullptr;
 
     uint32_t group_x_;
     uint32_t group_y_;

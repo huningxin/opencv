@@ -38,7 +38,6 @@ private:
     SoftmaxShaderConfig config_;
     Tensor* max_tensor_ = nullptr;
     Tensor* sum_tensor_ = nullptr;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

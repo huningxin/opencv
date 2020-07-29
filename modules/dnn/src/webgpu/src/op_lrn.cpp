@@ -31,11 +31,6 @@ OpLRN::OpLRN(const int radius, const float bias,
     type_ = "LRN";
 }
 
-OpLRN::~OpLRN()
-{
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
-}
 void OpLRN::reshapeOutTensor(Tensor& in, Tensor& out)
 {
     Shape shape = in.getShape();

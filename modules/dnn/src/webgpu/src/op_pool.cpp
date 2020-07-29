@@ -36,12 +36,6 @@ OpPool::OpPool(const int* filter_size, const int* pad, const int* stride,
     type_ = "Pool";
 }
 
-OpPool::~OpPool()
-{
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
-}
-
 bool OpPool::init(const int* filter_size, const int* pad, const int* stride,
                   const int padding_mode, const PoolType type, bool avg_pool_padded_area)
 {

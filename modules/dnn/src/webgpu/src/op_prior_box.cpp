@@ -58,8 +58,6 @@ OpPriorBox::~OpPriorBox()
         delete tensor_heights_;
     if(tensor_variance_)
         delete tensor_variance_;
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
 }
 
 void OpPriorBox::reshapeOutTensor(std::vector<Tensor *>& ins, Tensor& out)

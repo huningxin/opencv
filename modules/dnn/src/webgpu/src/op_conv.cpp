@@ -72,12 +72,6 @@ OpConv::OpConv(const int out_channel, const bool has_bias,
     type_ = "Conv";
 }
 
-OpConv::~OpConv()
-{
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
-}
-
 void OpConv::reshapeOutTensor(Tensor& in, Tensor& out)
 {
     Shape in_shape = in.getShape();
@@ -154,7 +148,41 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
         config_.block_height = 1;
         config_.block_width  = 1;
         config_.block_depth  = 1;
-        if (out_channel_ == in_channel_ && in_channel_ == group_)
+        if ((N % 8 == 0) && (K % 4 == 0) && (M % 4) == 0)
+        {
+            assert(group_ == 1); // TODO: support group > 1
+            config_.shader_type  = wConvShaderType48;
+            config_.local_size_x = 1;
+            config_.local_size_y = DEFAULT_LOCAL_SZ;
+            config_.local_size_z = 1;
+            config_.block_height = 4;
+            config_.block_width  = 8;
+            createShaderModule(conv48_spv, sizeof(conv48_spv)/sizeof(uint32_t));
+            ShaderConstant shader_constant;
+            shader_constant.lsz_x = config_.local_size_x;
+            shader_constant.lsz_y = config_.local_size_y;
+            shader_constant.lsz_z = config_.local_size_z;
+            shader_constant.in_h  = in_height_;
+            shader_constant.in_w  = in_width_;
+            shader_constant.out_w = out_width_;
+            shader_constant.stride_h = stride_height_;
+            shader_constant.stride_w = stride_width_;
+            shader_constant.pad_h = padding_top_;
+            shader_constant.pad_w = padding_left_;
+            shader_constant.filter_h = filter_height_;
+            shader_constant.filter_w = filter_width_;
+            shader_constant.channels = in_channel_;
+            shader_constant.batch = batch_;
+            shader_constant.m = M;
+            shader_constant.k = K;
+            shader_constant.n = N;
+            shader_constant.tail_m = M % 4;
+            shader_constant.dilation_h = dilation_height_;
+            shader_constant.dilation_w = dilation_width_;
+            if(! uniformBuffer_) uniformBuffer_ = new Buffer(&shader_constant, sizeof(ShaderConstant));
+            else uniformBuffer_->setBufferData(&shader_constant, sizeof(ShaderConstant));
+        }
+        else if (out_channel_ == in_channel_ && in_channel_ == group_)
         {
             config_.shader_type  = wConvShaderTypeDepthWise;
             createShaderModule(dw_conv_spv, sizeof(dw_conv_spv)/sizeof(uint32_t));
@@ -173,7 +201,9 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
     bindTensor(bias, 1, bgEntries);
     bindTensor(filter_weights, 2, bgEntries);
     bindTensor(out, 3, bgEntries);
-    ShaderParam param = {in_height_, in_width_,
+    if (config_.shader_type == wConvShaderTypeBasic || config_.shader_type == wConvShaderTypeDepthWise)
+    {
+        ShaderParam param = {in_height_, in_width_,
                         out_height_, out_width_,
                         stride_height_, stride_width_,
                         padding_top_, padding_left_,
@@ -181,26 +211,34 @@ bool OpConv::forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& o
                         dilation_height_, dilation_width_,
                         in_channel_, batch_, has_bias_,
                         M, K, N, 0, 0, 0};
-    int partition_num = 1;
-    if (config_.shader_type == wConvShaderTypeBasic)
-    {
-        param.basic_shader_partition_size = group_y_;
-        partition_num = (int)ceil(1.0 * out_channel_ / group_y_);
-    }
-
-    for (int b = 0;  b < batch_; b++)
-    {
-        param.basic_shader_batch_idx = b;
-        for (int n = 0;  n < partition_num; n++)
+        int partition_num = 1;
+        if (config_.shader_type == wConvShaderTypeBasic)
         {
-            param.basic_shader_partition_idx = n;
-            if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(ShaderParam));
-            else uniformBuffer_->setBufferData(&param, sizeof(ShaderParam));
-            bindUniform(*uniformBuffer_, 4, bgEntries);
-            createBindGroup();
-            createCommandBuffer();
-            runCommandBuffer();
+            param.basic_shader_partition_size = group_y_;
+            partition_num = (int)ceil(1.0 * out_channel_ / group_y_);
         }
+
+        for (int b = 0;  b < batch_; b++)
+        {
+            param.basic_shader_batch_idx = b;
+            for (int n = 0;  n < partition_num; n++)
+            {
+                param.basic_shader_partition_idx = n;
+                if(! uniformBuffer_) uniformBuffer_ = new Buffer(&param, sizeof(ShaderParam));
+                else uniformBuffer_->setBufferData(&param, sizeof(ShaderParam));
+                bindUniform(*uniformBuffer_, 4, bgEntries);
+                createBindGroup();
+                createCommandBuffer();
+                runCommandBuffer();
+            }
+        };
+    } 
+    else if(config_.shader_type == wConvShaderType48)
+    {
+        bindUniform(*uniformBuffer_, 4, bgEntries);
+        createBindGroup();
+        createCommandBuffer();
+        runCommandBuffer();
     }
     return true;
 }
@@ -227,6 +265,16 @@ bool OpConv::computeGroupCount()
         CV_Assert(config_.local_size_y == 1);
         group_y_ = std::min(MAX_GROUP_COUNT_Y, (int)floor(MAX_COMPUTE_GFLOPS / (GFLOPS / out_channel_)));
         group_z_ = 1;
+    }
+    else if (config_.shader_type == wConvShaderType48)
+    {
+        assert(config_.block_width == 8 &&
+               config_.block_height == 4 &&
+               config_.block_depth == 1 &&
+               config_.local_size_z == 1);
+        group_x_ = N / config_.block_width;
+        group_y_ = alignSize(alignSize(M, 4) / 4, config_.local_size_y) / config_.local_size_y;
+        group_z_ = batch_;
     }
     else
         CV_Assert(0);

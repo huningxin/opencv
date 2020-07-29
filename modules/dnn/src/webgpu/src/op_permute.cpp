@@ -42,8 +42,6 @@ OpPermute::~OpPermute()
         delete tensor_old_stride_;
     if(tensor_order_)
         delete tensor_order_;
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
 }
 
 void OpPermute::reshapeOutTensor(std::vector<Tensor *>& ins, std::vector<Tensor>& outs)

@@ -20,12 +20,6 @@ OpReLU::OpReLU(const float slope) : slope_(slope)
     type_ = "ReLU";
 }
 
-OpReLU::~OpReLU()
-{
-    if (uniformBuffer_)
-        uniformBuffer_->getWebGPUBuffer()->Release();
-}
-
 void OpReLU::reshapeOutTensor(Tensor& in, Tensor& out)
 {
     Shape shape = in.getShape();

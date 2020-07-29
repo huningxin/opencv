@@ -10,6 +10,7 @@ namespace cv { namespace dnn { namespace webgpu {
 enum ConvShaderType
 {
     wConvShaderTypeBasic = 0,
+    wConvShaderType48,
     wConvShaderTypeDepthWise,
     wConvShaderTypeNum
 };
@@ -33,7 +34,6 @@ public:
            const int* stride, const int* dilation,
            const int activation, const int group,
            const int padding_mode);
-    ~OpConv();
     void reshapeOutTensor(Tensor& in, Tensor& out);
     bool forward(Tensor& in, Tensor& filter_weights, Tensor& bias, Tensor& out);
     virtual bool forward(std::vector<Tensor>& ins,
@@ -69,7 +69,6 @@ private:
     Tensor* swizzled_weights = nullptr;
     ConvShaderConfig config_;
     bool dwconv_;
-    Buffer* uniformBuffer_ = nullptr;
 };
 
 #endif  // HAVE_WEBGPU

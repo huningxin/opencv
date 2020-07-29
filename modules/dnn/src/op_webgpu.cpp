@@ -126,7 +126,6 @@ void setBackendWrappersDirty(std::vector<Ptr<BackendWrapper> >& ptrs)
         ptr.dynamicCast<WGPUBackendWrapper>()->setDeviceDirty();
     }
 }
-
 #endif  // HAVE_WEBGPU
 
 void forwardWGPU(std::vector<Ptr<BackendWrapper> > &outputs, 
