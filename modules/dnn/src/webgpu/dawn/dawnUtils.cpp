@@ -2,13 +2,12 @@
 #include <memory>
 #include "dawnUtils.hpp"
 #include "opencv2/core/base.hpp"
-#ifdef HAVE_WEBGPU
-#include <dawn/webgpu_cpp.h>
-#include <dawn/dawn_proc.h>
-#include <dawn/dawn_wsi.h>
-#include <dawn_native/DawnNative.h>
-#endif  // HAVE_WEBGPU
 namespace cv { namespace dnn { namespace webgpu {
+#ifdef __EMSCRIPTEN__
+wgpu::Device createCppDawnDevice() {
+    return wgpu::Device::Acquire(emscripten_webgpu_get_device());
+}
+#else
 #ifdef HAVE_WEBGPU
 
 static std::shared_ptr<dawn_native::Instance> instance;
@@ -61,5 +60,5 @@ wgpu::Device createCppDawnDevice() {
 }
 
 #endif  // HAVE_WEBGPU
-
+#endif  //__EMSCRIPTEN__
 }}}  //namespace cv::dnn::webgpu

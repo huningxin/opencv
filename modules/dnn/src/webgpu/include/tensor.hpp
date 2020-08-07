@@ -1,8 +1,12 @@
 #ifndef OPENCV_DNN_WEBGPU_TENSOR_HPP
 #define OPENCV_DNN_WEBGPU_TENSOR_HPP
+#ifdef __EMSCRIPTEN__
+#include <webgpu/webgpu_cpp.h>
+#else
 #ifdef HAVE_WEBGPU
 #include <dawn/webgpu_cpp.h>
 #endif  // HAVE_WEBGPU
+#endif
 #include "wgpucom.hpp"
 #include <memory>
 namespace cv { namespace dnn { namespace webgpu {

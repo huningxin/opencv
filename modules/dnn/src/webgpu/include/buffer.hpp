@@ -3,10 +3,13 @@
 
 #include <unistd.h>
 #include <memory>
-
+#ifdef __EMSCRIPTEN__
+#include <webgpu/webgpu_cpp.h>
+#else
 #ifdef HAVE_WEBGPU
 #include <dawn/webgpu_cpp.h>
 #endif  // HAVE_WEBGPU
+#endif
 namespace cv { namespace dnn { namespace webgpu {
 #ifdef HAVE_WEBGPU
 class Buffer 

@@ -11,9 +11,13 @@
 #include <sstream>
 #include <algorithm>
 #include <memory>
+#ifdef __EMSCRIPTEN__
+#include <webgpu/webgpu_cpp.h>
+#else
 #ifdef HAVE_WEBGPU
 #include <dawn/webgpu_cpp.h>
 #endif  // HAVE_WEBGPU
+#endif
 #include "opencv2/core/utils/logger.hpp"
 #include "../shader/spv_shader.hpp"
 #include "../include/wgpucom.hpp"

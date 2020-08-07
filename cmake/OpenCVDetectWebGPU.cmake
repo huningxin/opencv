@@ -18,7 +18,7 @@ message(AUTHOR_WARNING "try_compile webgpu.cpp succeed")
 
 set(HAVE_WEBGPU 1)
 
-if(HAVE_WEBGPU)
+if(NOT EMSCRIPTEN AND HAVE_WEBGPU)
   include_directories(${WEBGPU_INCLUDE_DIRS})
   link_directories(${WEBGPU_LIBRARIES})
   link_libraries(dawn_proc dawn_native dawn_wire)

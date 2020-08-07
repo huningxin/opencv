@@ -27,7 +27,14 @@ Buffer::Buffer(std::shared_ptr<wgpu::Device> device,
     descriptor.usage = usage;
     WGPU_CHECK_POINTER_RET_VOID(device_);
     buffer_ = device_->CreateBuffer(& descriptor);
-    if(data) buffer_.SetSubData(0, size_, data);
+    if(data) 
+    {
+#ifdef __EMSCRIPTEN__
+        wQueue->WriteBuffer(buffer_, 0, data, size_);
+#else
+        buffer_.SetSubData(0, size_, data);
+#endif
+    }
 }
 
 Buffer::Buffer(const void* data, size_t size,  
@@ -42,13 +49,27 @@ Buffer::Buffer(const void* data, size_t size,
     descriptor.usage = usage;
     WGPU_CHECK_POINTER_RET_VOID(device_)
     buffer_ = device_->CreateBuffer(& descriptor);
-    if(data) buffer_.SetSubData(0, size_, data);
+    if(data) 
+    {
+#ifdef __EMSCRIPTEN__
+        wQueue->WriteBuffer(buffer_, 0, data, size_);
+#else
+        buffer_.SetSubData(0, size_, data);
+#endif
+    }
 }
 
 void Buffer::setBufferData(const void * data, size_t size)
 {
     size_ = size;
-    buffer_.SetSubData(0, size_, data);
+    if(data) 
+    {
+#ifdef __EMSCRIPTEN__
+        wQueue->WriteBuffer(buffer_, 0, data, size_);
+#else
+        buffer_.SetSubData(0, size_, data);
+#endif
+    }
 }
 
 const void* Buffer::MapReadAsyncAndWait() 
@@ -68,12 +89,26 @@ const void* Buffer::MapReadAsyncAndWait()
     wQueue->Submit(1, &cmdBuffer);
     encoder.Release();
     cmdBuffer.Release();
+#ifdef __EMSCRIPTEN__
+    gpuReadBuffer_.MapAsync(wgpu::MapMode::Read, 0, size_, 
+    [](WGPUBufferMapAsyncStatus status, void* userdata) {
+        Buffer * buffer= static_cast<Buffer *>(userdata);
+        buffer->mappedData = buffer->gpuReadBuffer_.GetConstMappedRange(0, buffer->size_);
+    },
+    this);
+    while(mappedData == nullptr) 
+    {
+        usleep(100);
+    }
+    return static_cast<const void *>(mappedData);
+#else
     gpuReadBuffer_.MapReadAsync(BufferMapReadCallback, this);
     while(mappedData == nullptr) 
     {
         device_->Tick();
     }
     return mappedData;
+#endif
 }
 
 #endif  // HAVE_WEBGPU

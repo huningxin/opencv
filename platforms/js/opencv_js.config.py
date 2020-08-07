@@ -30,9 +30,9 @@ video = {'': ['CamShift', 'calcOpticalFlowFarneback', 'calcOpticalFlowPyrLK', 'c
          'BackgroundSubtractorMOG2': ['BackgroundSubtractorMOG2', 'apply'],
          'BackgroundSubtractor': ['apply', 'getBackgroundImage']}
 
-dnn = {'dnn_Net': ['setInput', 'forward'],
+dnn = {'dnn_Net': ['setInput', 'forward', 'setPreferableBackend', 'setPreferableTarget'],
        '': ['readNetFromCaffe', 'readNetFromTensorflow', 'readNetFromTorch', 'readNetFromDarknet',
-            'readNetFromONNX', 'readNet', 'blobFromImage']}
+            'readNetFromONNX', 'readNet', 'blobFromImage', 'addLayerToPrev']}
 
 features2d = {'Feature2D': ['detect', 'compute', 'detectAndCompute', 'descriptorSize', 'descriptorType', 'defaultNorm', 'empty', 'getDefaultName'],
               'BRISK': ['create', 'getDefaultName'],

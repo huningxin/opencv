@@ -1,8 +1,13 @@
 #include "../../precomp.hpp"
+#ifdef __EMSCRIPTEN__
+#include <webgpu/webgpu_cpp.h>
+#else
 #ifdef HAVE_WEBGPU
 #include <dawn/webgpu_cpp.h>
 #endif  // HAVE_WEBGPU
+#endif
 namespace wgpu {
+#ifndef __EMSCRIPTEN__
 #ifdef HAVE_WEBGPU
     static_assert(sizeof(AdapterType) == sizeof(WGPUAdapterType), "sizeof mismatch for AdapterType");
     static_assert(alignof(AdapterType) == alignof(WGPUAdapterType), "alignof mismatch for AdapterType");
@@ -1743,4 +1748,5 @@ namespace wgpu {
         return reinterpret_cast<Proc>(wgpuGetProcAddress(device.Get(), procName));
     }
 #endif  // HAVE_WEBGPU
+#endif
 }
