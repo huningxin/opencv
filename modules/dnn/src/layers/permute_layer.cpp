@@ -46,6 +46,7 @@
 #include "../op_inf_engine.hpp"
 #include "../ie_ngraph.hpp"
 #include "../op_vkcom.hpp"
+#include "../op_webgpu.hpp"
 
 #include <float.h>
 #include <algorithm>
@@ -116,7 +117,8 @@ public:
         return backendId == DNN_BACKEND_OPENCV ||
                backendId == DNN_BACKEND_CUDA ||
                ((backendId == DNN_BACKEND_INFERENCE_ENGINE_NN_BUILDER_2019 || backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH) && haveInfEngine()) ||
-               (backendId == DNN_BACKEND_VKCOM && haveVulkan());
+               (backendId == DNN_BACKEND_VKCOM && haveVulkan()) ||
+               (backendId == DNN_BACKEND_WGPU && haveWGPU());;
     }
 
     bool getMemoryShapes(const std::vector<MatShape> &inputs,
@@ -427,6 +429,14 @@ public:
     }
 #endif // HAVE_VULKAN
 
+#ifdef HAVE_WEBGPU
+    virtual Ptr<BackendNode> initWGPU(const std::vector<Ptr<BackendWrapper> > &input) CV_OVERRIDE
+    {
+        CV_Assert(!_order.empty());
+        std::shared_ptr<webgpu::OpBase> op(new webgpu::OpPermute(_order));
+        return Ptr<BackendNode>(new WGPUBackendNode(input, op));
+    }
+#endif // HAVE_VULKAN
 
     size_t _count;
     std::vector<size_t> _order;

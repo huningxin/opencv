@@ -47,6 +47,7 @@
 #include "../op_inf_engine.hpp"
 #include "../ie_ngraph.hpp"
 #include "../op_vkcom.hpp"
+#include "../op_webgpu.hpp"
 
 #include "opencv2/core/hal/hal.hpp"
 #include "opencv2/core/hal/intrin.hpp"
@@ -303,7 +304,8 @@ public:
             else if (kernel_size.size() == 2)
                 return backendId == DNN_BACKEND_OPENCV ||
                        backendId == DNN_BACKEND_HALIDE ||
-                       (backendId == DNN_BACKEND_VKCOM && haveVulkan());
+                       (backendId == DNN_BACKEND_VKCOM && haveVulkan()) ||
+                       (backendId == DNN_BACKEND_WGPU && haveWGPU());
             else
                 return false;
         }
@@ -578,6 +580,71 @@ public:
 
         return Ptr<BackendNode>(new VkComBackendNode(inputs, op, blobsWrapper));
 #endif  // HAVE_VULKAN
+        return Ptr<BackendNode>();
+    }
+
+    virtual Ptr<BackendNode> initWGPU(const std::vector<Ptr<BackendWrapper> > &inputs) CV_OVERRIDE
+    {
+#ifdef HAVE_WEBGPU
+        int out_channel = blobs[0].size[0];
+        bool has_bias = hasBias() || fusedBias;
+        int filter_size[2] = {kernel.height, kernel.width};
+        int pad_size[2] = {pad.height, pad.width};
+        int stride_size[2] = {stride.height, stride.width};
+        int dilation_size[2] = {dilation.height, dilation.width};
+        int activation = 0;
+        webgpu::Tensor input_tensor = WGPUTensor(inputs[0]);
+        int in_channel = input_tensor.dimSize(1);
+        int group = in_channel / blobs[0].size[1];
+
+        // TODO: support group > 1
+        if (group != 1)
+            return Ptr<BackendNode>();
+
+        int padding_mode;
+        if (padMode.empty())
+        {
+            padding_mode = webgpu::wPaddingModeCaffe;
+        }
+        else if (padMode == "VALID")
+        {
+            padding_mode = webgpu::wPaddingModeValid;
+        }
+        else if (padMode == "SAME")
+        {
+            padding_mode = webgpu::wPaddingModeSame;
+        }
+        else
+            CV_Error(Error::StsError, "Unsupported padding mode " + padMode);
+
+        std::shared_ptr<webgpu::OpBase> op(new webgpu::OpConv(out_channel, has_bias,
+                    filter_size, pad_size,
+                    stride_size, dilation_size,
+                    activation, group,
+                    padding_mode));
+
+        std::vector<Ptr<BackendWrapper> > blobsWrapper;
+
+        if (fusedWeights)
+        {
+            Mat wm;
+            weightsMat.copyTo(wm); // to handle the case of isContinuous() == false
+            wm = wm.reshape(1, blobs[0].dims, blobs[0].size);
+            blobsWrapper.push_back(Ptr<BackendWrapper>(new WGPUBackendWrapper(wm)));
+        }
+        else
+        {
+            blobsWrapper.push_back(Ptr<BackendWrapper>(new WGPUBackendWrapper(blobs[0])));
+        }
+
+        if (has_bias)
+        {
+            Mat biasesMat({out_channel}, CV_32F, &biasvec[0]);
+            blobsWrapper.push_back(Ptr<BackendWrapper>(new WGPUBackendWrapper(biasesMat)));
+        }
+
+        return Ptr<BackendNode>(new WGPUBackendNode(inputs, op, blobsWrapper));
+#endif  // HAVE_WEBGPU
         return Ptr<BackendNode>();
     }
 

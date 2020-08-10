@@ -1629,6 +1629,47 @@ TEST(Layer_Test_PoolingIndices, Accuracy)
     normAssert(indices, outputs[1].reshape(1, 5));
 }
 
+static std::string path(const std::string& file)
+{
+    return findDataFile("dnn/tensorflow/" + file);
+}
+void runTensorFlowNet(const std::string& prefix, int layer)
+{
+    std::string netPath = path(prefix + "_net.pb");
+    std::string netConfig = "";
+    std::string inpPath = path(prefix + "_in.npy");
+    std::string outPath = path(prefix + "_out.npy");
+
+    cv::Mat input = blobFromNPY(inpPath);
+    cv::Mat ref = blobFromNPY(outPath);
+
+    Net net0, net1;
+    net0 = readNetFromTensorflow(netPath, netConfig);
+    net0.setPreferableBackend(DNN_BACKEND_WGPU);
+    net0.setPreferableTarget(DNN_TARGET_WGPU);
+    net0.setInput(input);
+    for(int i = 0; i < net0.getLayerNames().size(); i++) 
+    {
+        std::cout<<net0.getLayerNames().at(i)<<std::endl;
+    }
+    std::cout<<"Compute to :"<<net0.getLayerNames().at(layer)<<std::endl;
+    cv::Mat out0 = net0.forward(net0.getLayerNames().at(layer));
+    net1 = readNetFromTensorflow(netPath, netConfig);
+    net1.setPreferableBackend(DNN_BACKEND_VKCOM);
+    net1.setPreferableTarget(DNN_TARGET_VULKAN);
+    net1.setInput(input);
+    cv::Mat out1 = net1.forward(net1.getLayerNames().at(layer));
+    normAssert(out0, out1, "", 1e-05, 1e-04);
+}
+
+TEST(testTFLayer, Accuracy)
+{
+    for(int i = 0; i <= 7; i++)
+    {
+        runTensorFlowNet("slim_batch_norm", i);
+    }
+}
+
 typedef testing::TestWithParam<tuple<Vec4i, int, tuple<Backend, Target> > > Layer_Test_ShuffleChannel;
 TEST_P(Layer_Test_ShuffleChannel, Accuracy)
 {
