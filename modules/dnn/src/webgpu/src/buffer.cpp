@@ -91,6 +91,17 @@ const void* Buffer::MapReadAsyncAndWait()
     cmdBuffer.Release();
 #ifdef __EMSCRIPTEN__
     return readBufferAsync(gpuReadBuffer_.Get());
+    // gpuReadBuffer_.MapAsync(wgpu::MapMode::Read, 0, size_, 
+    // [](WGPUBufferMapAsyncStatus status, void* userdata) {
+    //     Buffer * buffer= static_cast<Buffer *>(userdata);
+    //     buffer->mappedData = buffer->gpuReadBuffer_.GetConstMappedRange(0, buffer->size_);
+    // }, this);
+    // while(mappedData == nullptr) 
+    // {
+    //     emscripten_sleep(1);
+    // }
+    // if(mappedData == nullptr) CV_Error(Error::StsError, "Buffer mapAsync failed");
+    // return mappedData;
 #else
     gpuReadBuffer_.MapAsync(wgpu::MapMode::Read, 0, size_, 
     [](WGPUBufferMapAsyncStatus status, void* userdata) {
@@ -101,9 +112,8 @@ const void* Buffer::MapReadAsyncAndWait()
     {
         device_->Tick();
     }
+    if(mappedData == nullptr) CV_Error(Error::StsError, "Buffer mapAsync failed");
     return mappedData;
-    // TODO: Find a suitable way to wait for asynchronously reading Buffer in JS
-    // return readBufferAsync(gpuReadBuffer_.Get());
 #endif
 }
 

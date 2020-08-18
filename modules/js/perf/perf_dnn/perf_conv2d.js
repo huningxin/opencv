@@ -83,7 +83,7 @@ async function testCaffeLayer()
     const out = net.forward();
     const time = (performance.now() - start);
     console.log("Time cost(ms) :", time);
-    console.log(out.data);
+    console.log(out);
     net1 = cv.readNetFromCaffe(path.configPath, '');
     net1.setInput(input);
     net1.setPreferableBackend(cv.DNN_BACKEND_DEFAULT);
@@ -98,6 +98,11 @@ async function testCaffeLayer()
     console.log("Time1 cost(ms) :", time1);
     console.log(out1.data);
     console.log("Net compute succeed");
+    input.delete();
+    net.delete();
+    net1.delete();
+    if(out) out.delete();
+    out1.delete();
 }
 
 async function perf() {
