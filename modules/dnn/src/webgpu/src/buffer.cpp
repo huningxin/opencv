@@ -89,6 +89,9 @@ const void* Buffer::MapReadAsyncAndWait()
     wQueue->Submit(1, &cmdBuffer);
     encoder.Release();
     cmdBuffer.Release();
+#ifdef __EMSCRIPTEN__
+    return readBufferAsync(gpuReadBuffer_.Get());
+#else
     gpuReadBuffer_.MapAsync(wgpu::MapMode::Read, 0, size_, 
     [](WGPUBufferMapAsyncStatus status, void* userdata) {
         Buffer * buffer= static_cast<Buffer *>(userdata);
@@ -101,6 +104,7 @@ const void* Buffer::MapReadAsyncAndWait()
     return mappedData;
     // TODO: Find a suitable way to wait for asynchronously reading Buffer in JS
     // return readBufferAsync(gpuReadBuffer_.Get());
+#endif
 }
 
 #endif  // HAVE_WEBGPU
