@@ -5,6 +5,7 @@
 #include <memory>
 #ifdef __EMSCRIPTEN__
 #include <webgpu/webgpu_cpp.h>
+#include <emscripten.h>
 #else
 #ifdef HAVE_WEBGPU
 #include <dawn/webgpu_cpp.h>
@@ -29,14 +30,6 @@ public:
     }
     wgpu::Buffer * getWebGPUBuffer() { return & buffer_; }
     wgpu::BufferUsage getBufferUsage() { return usage_;}
-    
-    static void BufferMapReadCallback(WGPUBufferMapAsyncStatus status,
-                                      const void* data,
-                                      uint64_t dataLength,
-                                      void* userdata)
-    {
-        static_cast<Buffer*>(userdata)->mappedData = data;
-    }
     void setBufferData(const void * data, size_t size);
     const void* MapReadAsyncAndWait(); 
     void unMap() { if(gpuReadBuffer_) gpuReadBuffer_.Unmap(); }
@@ -48,7 +41,7 @@ private:
     wgpu::Buffer gpuReadBuffer_;
     wgpu::BufferUsage usage_;
     size_t size_;
-    const void * mappedData = nullptr;
+    const void* mappedData = nullptr;
 };
 
 #endif  // HAVE_WEBGPU
