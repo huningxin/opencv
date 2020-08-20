@@ -14,8 +14,14 @@ namespace cv { namespace dnn { namespace webgpu {
             const gpuReadBuffer = WebGPU.mgrBuffer.get(id);
             await gpuReadBuffer.mapAsync(GPUMapMode.READ);
             const arrayBuffer = gpuReadBuffer.getMappedRange();
-            console.log(arrayBuffer.length);
-            return arrayBuffer;
+
+            // console for test
+            console.log("sizeof arrayBuffer", arrayBuffer.byteLength);
+            console.log("Array buffer in JS", new Uint8Array(arrayBuffer));
+
+            var mappedData = _malloc(arrayBuffer.byteLength);
+            setValue(mappedData, arrayBuffer, 'i8');
+            return mappedData;
         });
     });
 #endif
