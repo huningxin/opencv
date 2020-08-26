@@ -70,6 +70,7 @@ function asyncForwardWrapper(net) {
   return new Promise(function(resolve) {
       Module.Asyncify.asyncFinalizers.push(function() {
         resolve(outputs.get(0));
+        outputs.delete();
       });
   });
 }
