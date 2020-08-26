@@ -27,7 +27,6 @@ public:
     {
         if(buffer_) buffer_.Release();
         if(gpuReadBuffer_) gpuReadBuffer_.Release();
-        if(mappedData) delete mappedData;
     }
     wgpu::Buffer * getWebGPUBuffer() { return & buffer_; }
     wgpu::BufferUsage getBufferUsage() { return usage_;}

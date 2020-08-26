@@ -187,7 +187,7 @@ class Builder:
         if self.options.build_flags:
             flags += self.options.build_flags
         if self.options.build_webgpu:
-            flags += "-s USE_WEBGPU=1 -O3 -g4 --source-map-base / -s ASYNCIFY -s 'ASYNCIFY_IMPORTS=[\"readBufferAsync\"]' "
+            flags += "-s USE_WEBGPU=1 -O3 -g4 --source-map-base / -s ASYNCIFY -s EXTRA_EXPORTED_RUNTIME_METHODS=['Asyncify'] "
         return flags
 
     def config(self):
