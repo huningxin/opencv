@@ -1424,6 +1424,8 @@ struct Net::Impl : public detail::NetImplBase
 #endif
         CV_Assert(preferableBackend != DNN_BACKEND_VKCOM ||
                   preferableTarget == DNN_TARGET_VULKAN);
+        CV_Assert(preferableBackend != DNN_BACKEND_WEBNN ||
+                  preferableTarget == DNN_TARGET_WEBNN);
         CV_Assert(preferableBackend != DNN_BACKEND_CUDA ||
                   IS_DNN_CUDA_TARGET(preferableTarget));
         if (!netWasAllocated || this->blobsToKeep != blobsToKeep_)
@@ -1456,6 +1458,11 @@ struct Net::Impl : public detail::NetImplBase
             }
 #endif
             if (preferableBackend == DNN_BACKEND_VKCOM && !haveVulkan())
+            {
+                preferableBackend = DNN_BACKEND_OPENCV;
+                preferableTarget = DNN_TARGET_CPU;
+            }
+            if (preferableBackend == DNN_BACKEND_WEBNN && !haveWebNN())
             {
                 preferableBackend = DNN_BACKEND_OPENCV;
                 preferableTarget = DNN_TARGET_CPU;
