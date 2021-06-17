@@ -246,6 +246,11 @@ private:
             backends.push_back(std::make_pair(DNN_BACKEND_VKCOM, DNN_TARGET_VULKAN));
 #endif
 
+#ifdef HAVE_WEBNN
+        if (haveWebNN())
+            backends.push_back(std::make_pair(DNN_BACKEND_WEBNN, DNN_TARGET_WEBNN));
+#endif
+
 #ifdef HAVE_CUDA
         if (haveCUDA())
         {
@@ -1129,6 +1134,13 @@ static Ptr<BackendWrapper> wrapMat(int backendId, int targetId, cv::Mat& m)
         return Ptr<BackendWrapper>(new VkComBackendWrapper(m));
 #endif  // HAVE_VULKAN
     }
+    else if (backendId == DNN_BACKEND_WEBNN)
+    {
+        CV_Assert(haveWebNN());
+#ifdef HAVE_WEBNN
+        return Ptr<BackendWrapper>(new WebNNBackendWrapper(m));
+#endif  // HAVE_WEBNN
+    }
     else if (backendId == DNN_BACKEND_CUDA)
     {
         CV_Assert(haveCUDA());
@@ -1267,6 +1279,12 @@ struct Net::Impl : public detail::NetImplBase
             {
   #ifdef HAVE_VULKAN
                 return Ptr<BackendWrapper>(new VkComBackendWrapper(baseBuffer, host));
+  #endif
+            }
+            else if (preferableBackend == DNN_BACKEND_WEBNN)
+            {
+  #ifdef HAVE_WEBNN
+                return Ptr<BackendWrapper>(new WebNNBackendWrapper(baseBuffer, host));
   #endif
             }
             else if (preferableBackend == DNN_BACKEND_CUDA)
