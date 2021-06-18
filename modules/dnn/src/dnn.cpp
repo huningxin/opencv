@@ -4545,6 +4545,7 @@ string Net::Impl::dump()
         case DNN_BACKEND_INFERENCE_ENGINE_NGRAPH: backend = "NGRAPH/"; break;
         case DNN_BACKEND_OPENCV: backend = "OCV/"; break;
         case DNN_BACKEND_VKCOM: backend = "VULKAN/"; break;
+        case DNN_BACKEND_WEBNN: backend = "WEBNN/"; break;
         case DNN_BACKEND_CUDA: backend = "CUDA/"; break;
         // don't use default:
     }
@@ -4681,6 +4682,7 @@ string Net::Impl::dump()
             case DNN_TARGET_MYRIAD: out << "MYRIAD"; colorId = 3; break;
             case DNN_TARGET_HDDL: out << "HDDL"; colorId = 8; break;
             case DNN_TARGET_VULKAN: out << "VULKAN"; colorId = 7; break;
+            case DNN_TARGET_WEBNN: out << "WEBNN"; colorId = 9; break;
             case DNN_TARGET_FPGA: out << "FPGA"; colorId = 4; break;
             case DNN_TARGET_CUDA: out << "CUDA"; colorId = 5; break;
             case DNN_TARGET_CUDA_FP16: out << "CUDA_FP16"; colorId = 6; break;
