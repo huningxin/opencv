@@ -2357,6 +2357,40 @@ struct Net::Impl : public detail::NetImplBase
     }
 #endif  // HAVE_DNN_NGRAPH
 
+    void initWebNNBackend()
+    {
+        CV_TRACE_FUNCTION();
+        CV_Assert(preferableBackend == DNN_BACKEND_WEBNN);
+#ifdef HAVE_WEBNN
+        if (!haveWebNN())
+            return;
+
+        MapIdToLayerData::iterator it = layers.begin();
+        for (; it != layers.end(); it++)
+        {
+            LayerData &ld = it->second;
+            Ptr<Layer> layer = ld.layerInstance;
+            if (!layer->supportBackend(preferableBackend))
+            {
+                continue;
+            }
+
+            ld.skip = false;
+
+            try
+            {
+                ld.backendNodes[DNN_BACKEND_WEBNN] =
+                    layer->initWebNN(ld.inputBlobsWrappers);
+            }
+            catch (const cv::Exception& e)
+            {
+                CV_LOG_ERROR(NULL, "initWebNN failed, fallback to CPU implementation. " << e.what());
+                ld.backendNodes[DNN_BACKEND_WEBNN] = Ptr<BackendNode>();
+            }
+        }
+#endif
+    }
+
     void initVkComBackend()
     {
         CV_TRACE_FUNCTION();
