@@ -44,6 +44,7 @@
 #include "op_inf_engine.hpp"
 #include "ie_ngraph.hpp"
 #include "op_vkcom.hpp"
+#include "op_webnn.hpp"
 #include "op_cuda.hpp"
 
 #ifdef HAVE_CUDA
@@ -1655,6 +1656,8 @@ struct Net::Impl : public detail::NetImplBase
         }
         else if (preferableBackend == DNN_BACKEND_VKCOM)
             initVkComBackend();
+        else if (preferableBackend == DNN_BACKEND_WEBNN)
+            initWebNNBackend();
         else if (preferableBackend == DNN_BACKEND_CUDA)
             initCUDABackend(blobsToKeep_);
         else
@@ -3443,6 +3446,19 @@ struct Net::Impl : public detail::NetImplBase
                         forwardLayer(ld);
                     }
                 }
+                else if (preferableBackend == DNN_BACKEND_WEBNN)
+                {
+                    try
+                    {
+                        forwardWebNN(ld.outputBlobsWrappers, node);
+                    }
+                    catch (const cv::Exception& e)
+                    {
+                        CV_LOG_ERROR(NULL, "forwardWebNN failed, fallback to CPU implementation. " << e.what());
+                        it->second = Ptr<BackendNode>();
+                        forwardLayer(ld);
+                    }
+                }
                 else
                 {
                     CV_Error(Error::StsNotImplemented, "Unknown backend identifier");
@@ -5114,6 +5130,13 @@ Ptr<BackendNode> Layer::initCUDA(
 Ptr<BackendNode> Layer::initVkCom(const std::vector<Ptr<BackendWrapper> > &)
 {
     CV_Error(Error::StsNotImplemented, "VkCom pipeline of " + type +
+                                       " layers is not defined.");
+    return Ptr<BackendNode>();
+}
+
+Ptr<BackendNode> Layer::initWebNN(const std::vector<Ptr<BackendWrapper> > &)
+{
+    CV_Error(Error::StsNotImplemented, "WebNN pipeline of " + type +
                                        " layers is not defined.");
     return Ptr<BackendNode>();
 }
