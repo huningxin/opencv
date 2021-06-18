@@ -5,11 +5,11 @@
 // Copyright (C) 2018, Intel Corporation, all rights reserved.
 // Third party copyrights are property of their respective owners.
 
-#ifndef OPENCV_DNN_OP_VKCOM_HPP
-#define OPENCV_DNN_OP_VKCOM_HPP
+#ifndef OPENCV_DNN_OP_WEBNN_HPP
+#define OPENCV_DNN_OP_WEBNN_HPP
 
 #include <opencv2/dnn/shape_utils.hpp>
-#ifdef HAVE_VULKAN
+#ifdef HAVE_WEBNN
 #include "vkcom/include/vkcom.hpp"
 #endif  // HAVE_VULKAN
 

@@ -1,0 +1,75 @@
+    {
+        "file": "webnn/webnn.h",
+        "defines": [],
+        "structs": {
+            "WebnnChainedStruct": [
+                "next",
+                "sType"
+            ],
+            "WebnnBatchNormOptions": [
+                "scale",
+                "bias",
+                "axis",
+                "epsilon"
+            ],
+            "WebnnClampOptions": [
+                "minValue",
+                "maxValue"
+            ],
+            "WebnnCompilationOptions": [
+                "powerPreference"
+            ],
+            "WebnnConv2dOptions": [
+                "paddingCount",
+                "padding",
+                "stridesCount",
+                "strides",
+                "dilationsCount",
+                "dilations",
+                "groups",
+                "layout"
+            ],
+            "WebnnGemmOptions": [
+                "c",
+                "alpha",
+                "beta",
+                "aTranspose",
+                "bTranspose"
+            ],
+            "WebnnInput": [
+                "buffer",
+                "size",
+                "dimensions",
+                "dimensionsCount"
+            ],
+            "WebnnLeakyReluOptions": [
+                "alpha"
+            ],
+            "WebnnOperandDescriptor": [
+                "type",
+                "dimensions",
+                "dimensionsCount"
+            ],
+            "WebnnOutput": [
+                "buffer",
+                "size",
+                "dimensions",
+                "dimensionsCount"
+            ],
+            "WebnnPool2dOptions": [
+                "windowDimensionsCount",
+                "windowDimensions",
+                "paddingCount",
+                "padding",
+                "stridesCount",
+                "strides",
+                "dilationsCount",
+                "dilations",
+                "layout"
+            ],
+            "WebnnTransposeOptions": [
+                "permutationCount",
+                "permutation"
+            ]
+        }
+    }
