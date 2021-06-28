@@ -1,6 +1,6 @@
 ocv_clear_vars(HAVE_WEBNN)
 if(WITH_WEBNN)
-  set(WEBNN_HEADER_DIRS "$ENV{WEBNN_NATIVE_DIR}/out/Release/gen/src/include/webnn")
+  set(WEBNN_HEADER_DIRS "$ENV{WEBNN_NATIVE_DIR}/out/Release/gen/src/include")
   set(WEBNN_INCLUDE_DIRS "$ENV{WEBNN_NATIVE_DIR}/src/include")
   set(WEBNN_LIBRARIES "$ENV{WEBNN_NATIVE_DIR}/out/Release/gen/src/webnn")
 endif()
