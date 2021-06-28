@@ -1,19 +1,10 @@
 ## Build WebNN-native to enable native implementation for DNN_BACKEND_WEBNN  in modules/dnn
 
 
-### Build WebNN and set the environment variable
+### Build WebNN-native and set the environment variable
 
- Refer to [WebNN's build instructions](https://github.com/otcshare/webnn-native/blob/main/README.md) to complete the build of Dawn (build the Release version). Set environment variable `WEBGPU_ROOT_DIR` to enable native DNN_BACKEND_WEBGPU build: `export WEBGPU_ROOT_DIR=${PATH_TO_Dawn}`.
+ Refer to [WebNN's build instructions](https://github.com/otcshare/webnn-native/blob/main/README.md) to complete the build of WebNN-native (build the Release version). Set environment variable `WEBNN_NATIVE_DIR` to enable native DNN_BACKEND_WEBGPU build: `export WEBNN_NATIVE_DIR=${PATH_TO_WebNN}`.
 
-### Test native DNN_BACKEND_WEBGPU backend
-Add -DWITH_WEBGPU=ON to the cmake command to build the webgpu module such as:
-`cmake -D CMAKE_BUILD_TYPE=Release -DWITH_WEBGPU=ON -D CMAKE_INSTALL_PREFIX=/usr/local ..`
-
-Temporarily following these instructions to do the test:
-```
-git clone https://github.com/opencv/opencv_extra.git
-export OPENCV_TEST_DATA_PATH=${PATH_TO}/opencv_extra/testdata
-sudo apt-get install libvulkan1 mesa-vulkan-drivers vulkan-utils
-git clone https://github.com/NALLEIN/opencv.git
-cd opencv/
-git checkout -b DawnTest origin/gsoc_2020_webgpu
+### Test native DNN_BACKEND_WEBNN backend
+Add -DWITH_WEBNN=ON to the cmake command to build the WebNN module such as:
+`cmake -D CMAKE_BUILD_TYPE=Release -DWITH_WEBNN=ON -D CMAKE_INSTALL_PREFIX=/usr/local ..`
