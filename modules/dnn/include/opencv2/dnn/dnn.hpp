@@ -74,7 +74,6 @@ CV__DNN_INLINE_NS_BEGIN
         DNN_BACKEND_OPENCV,
         DNN_BACKEND_VKCOM,
         DNN_BACKEND_CUDA,
-        DNN_BACKEND_WEBNN,
 #ifdef __OPENCV_BUILD
         DNN_BACKEND_INFERENCE_ENGINE_NGRAPH = 1000000,     // internal - use DNN_BACKEND_INFERENCE_ENGINE + setInferenceEngineBackendType()
         DNN_BACKEND_INFERENCE_ENGINE_NN_BUILDER_2019,      // internal - use DNN_BACKEND_INFERENCE_ENGINE + setInferenceEngineBackendType()
@@ -92,7 +91,6 @@ CV__DNN_INLINE_NS_BEGIN
         DNN_TARGET_OPENCL_FP16,
         DNN_TARGET_MYRIAD,
         DNN_TARGET_VULKAN,
-        DNN_TAEGET_WEBNN,
         DNN_TARGET_FPGA,  //!< FPGA device with CPU fallbacks using Inference Engine's Heterogeneous plugin.
         DNN_TARGET_CUDA,
         DNN_TARGET_CUDA_FP16,
@@ -300,7 +298,6 @@ CV__DNN_INLINE_NS_BEGIN
 
         virtual Ptr<BackendNode> initVkCom(const std::vector<Ptr<BackendWrapper> > &inputs);
 
-        virtual Ptr<BackendNode> initWebNN(const std::vector<Ptr<BackendWrapper> > &inputs);
 
         /**
          * @brief Returns a CUDA backend node

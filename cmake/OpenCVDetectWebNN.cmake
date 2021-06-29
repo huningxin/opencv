@@ -1,8 +1,9 @@
 ocv_clear_vars(HAVE_WEBNN)
+ocv_clear_vars(WEBNN_EMSDK)
 if(WITH_WEBNN)
   set(WEBNN_HEADER_DIRS "$ENV{WEBNN_NATIVE_DIR}/out/Release/gen/src/include")
   set(WEBNN_INCLUDE_DIRS "$ENV{WEBNN_NATIVE_DIR}/src/include")
-  set(WEBNN_LIBRARIES "$ENV{WEBNN_NATIVE_DIR}/out/Release/gen/src/webnn")
+  set(WEBNN_LIBRARIES "$ENV{WEBNN_NATIVE_DIR}/out/Release/libwebnn_native.so")
 endif()
 
 try_compile(VALID_WEBNN
@@ -19,8 +20,3 @@ endif()
 message(AUTHOR_WARNING "Use WebNN-native")
 
 set(HAVE_WEBNN 1)
-
-if(NOT EMSCRIPTEN AND HAVE_WEBGPU)
-  include_directories(${WEBNN_INCLUDE_DIRS} ${WEBNN_HEADER_DIRS})
-  link_directories(${WEBNN_LIBRARIES})
-endif()
