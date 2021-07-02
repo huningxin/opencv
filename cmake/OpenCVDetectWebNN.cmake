@@ -9,6 +9,7 @@ endif()
 try_compile(VALID_WEBNN
       "${OpenCV_BINARY_DIR}"
       "${OpenCV_SOURCE_DIR}/cmake/checks/webnn.cpp"
+      "$ENV{WEBNN_NATIVE_DIR}/gen/src/webnn/webnn_cpp.cpp"
       CMAKE_FLAGS "-DINCLUDE_DIRECTORIES:STRING=${WEBNN_INCLUDE_DIRS}\;${WEBNN_HEADER_DIRS}"
                   "-DLINK_LIBRARIES:STRING=${WEBNN_LIBRARIES}"
       OUTPUT_VARIABLE TRY_OUT
