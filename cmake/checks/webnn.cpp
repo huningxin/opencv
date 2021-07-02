@@ -3,8 +3,12 @@
 #include <webnn/webnn_proc.h>
 #include <webnn_native/WebnnNative.h>
 
+
 int main(int /*argc*/, char** /*argv*/)
 {
-    MLContext context = webnn_native::CreateContext();
+    WebnnProcTable backendProcs = webnn_native::GetProcs();
+    webnnProcSetProcs(&backendProcs);
+    ml::Context ml_context = ml::Context(webnn_native::CreateContext());
+    // MLContext context = webnn_native::CreateContext();
     return 0;
 }
