@@ -9,6 +9,5 @@ int main(int /*argc*/, char** /*argv*/)
     WebnnProcTable backendProcs = webnn_native::GetProcs();
     webnnProcSetProcs(&backendProcs);
     ml::Context ml_context = ml::Context(webnn_native::CreateContext());
-    // MLContext context = webnn_native::CreateContext();
     return 0;
 }
