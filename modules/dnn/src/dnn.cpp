@@ -45,6 +45,7 @@
 #include "ie_ngraph.hpp"
 #include "op_vkcom.hpp"
 #include "op_cuda.hpp"
+#include "op_webnn.hpp"
 
 #ifdef HAVE_CUDA
 #include "cuda4dnn/init.hpp"
@@ -230,6 +231,11 @@ private:
         }
 #endif
 #endif // HAVE_INF_ENGINE
+
+#ifdef HAVE_WEBNN
+        if (haveWebNN())
+            backends.push_back(std::make_pair(DNN_BACKEND_WEBNN, DNN_TARGET_WEBNN));
+#endif // HAVE_WEBNN
 
 #ifdef HAVE_OPENCL
         if (cv::ocl::useOpenCL())
@@ -1122,6 +1128,15 @@ static Ptr<BackendWrapper> wrapMat(int backendId, int targetId, cv::Mat& m)
         CV_Error(Error::StsNotImplemented, "This OpenCV version is built without support of Inference Engine + nGraph");
 #endif
     }
+    else if (backendId == DNN_BACKEND_WEBNN)
+    {
+        CV_Assert(haveWebNN());
+#ifdef HAVE_WEBNN
+        return Ptr<BackendWrapper>(new WebNNBackendWrapper(targetId, m));
+#else
+        CV_Error(Error::StsNotImplemented, "This OpenCV version is built without support of WebNN");
+#endif
+    }
     else if (backendId == DNN_BACKEND_VKCOM)
     {
         CV_Assert(haveVulkan());
@@ -1263,6 +1278,12 @@ struct Net::Impl : public detail::NetImplBase
             {
                 return wrapMat(preferableBackend, preferableTarget, host);
             }
+            else if (preferableBackend == DNN_BACKEND_WEBNN)
+            {
+                #ifdef HAVE_WEBNN
+                return wrapMat(preferableBackend, preferableTarget, host);
+                #endif
+            }
             else if (preferableBackend == DNN_BACKEND_VKCOM)
             {
   #ifdef HAVE_VULKAN
@@ -1403,6 +1424,10 @@ struct Net::Impl : public detail::NetImplBase
                   preferableTarget == DNN_TARGET_FPGA
             );
         }
+#endif
+#ifdef HAVE_WEBNN
+        CV_Assert(preferableBackend != DNN_BACKEND_WEBNN ||
+                  preferableTarget == DNN_TARGET_WEBNN);
 #endif
         CV_Assert(preferableBackend != DNN_BACKEND_VKCOM ||
                   preferableTarget == DNN_TARGET_VULKAN);
@@ -1626,6 +1651,14 @@ struct Net::Impl : public detail::NetImplBase
             initNgraphBackend(blobsToKeep_);
 #else
             CV_Error(Error::StsNotImplemented, "This OpenCV version is built without support of Inference Engine + nGraph");
+#endif
+        }
+        else if (preferableBackend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH)
+        {
+#ifdef HAVE_WEBNN
+            initWebNNBackend(blobsToKeep_);
+#else
+            CV_Error(Error::StsNotImplemented, "This OpenCV version is built without support of WebNN");
 #endif
         }
         else if (preferableBackend == DNN_BACKEND_VKCOM)
@@ -2331,6 +2364,13 @@ struct Net::Impl : public detail::NetImplBase
         }
     }
 #endif  // HAVE_DNN_NGRAPH
+
+    void initNgraphBackend(const std::vector<LayerPin>& blobsToKeep_)
+    {
+#ifdef HAVE_WEBNN
+        // to do
+#endif
+    }
 
     void initVkComBackend()
     {
@@ -3368,6 +3408,10 @@ struct Net::Impl : public detail::NetImplBase
                     forwardInfEngine(ld.outputBlobsWrappers, node, isAsync);
                 }
                 else if (preferableBackend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH)
+                {
+                    forwardNgraph(ld.outputBlobsWrappers, node, isAsync);
+                }
+                 else if (preferableBackend == DNN_BACKEND_WEBNN)
                 {
                     forwardNgraph(ld.outputBlobsWrappers, node, isAsync);
                 }
