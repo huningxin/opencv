@@ -5122,6 +5122,13 @@ Ptr<BackendNode> Layer::initNgraph(const std::vector<Ptr<BackendWrapper> > & inp
     return Ptr<BackendNode>();
 }
 
+Ptr<BackendNode> Layer::initWebNN(const std::vector<Ptr<BackendWrapper> > & inputs, const std::vector<Ptr<BackendNode> >& nodes)
+{
+    CV_Error(Error::StsNotImplemented, "WebNN pipeline of " + type +
+                                       " layers is not defined.");
+    return Ptr<BackendNode>();
+}
+
 void Layer::applyHalideScheduler(Ptr<BackendNode>& node, const std::vector<Mat*> &inputs,
                                  const std::vector<Mat> &outputs, int targetId) const
 {
