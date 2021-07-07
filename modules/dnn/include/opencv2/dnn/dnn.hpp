@@ -73,6 +73,7 @@ CV__DNN_INLINE_NS_BEGIN
                                                  //!< @sa setInferenceEngineBackendType
         DNN_BACKEND_OPENCV,
         DNN_BACKEND_VKCOM,
+        DNN_BACKEND_WEBNN,
         DNN_BACKEND_CUDA,
 #ifdef __OPENCV_BUILD
         DNN_BACKEND_INFERENCE_ENGINE_NGRAPH = 1000000,     // internal - use DNN_BACKEND_INFERENCE_ENGINE + setInferenceEngineBackendType()
@@ -94,7 +95,8 @@ CV__DNN_INLINE_NS_BEGIN
         DNN_TARGET_FPGA,  //!< FPGA device with CPU fallbacks using Inference Engine's Heterogeneous plugin.
         DNN_TARGET_CUDA,
         DNN_TARGET_CUDA_FP16,
-        DNN_TARGET_HDDL
+        DNN_TARGET_HDDL,
+        DNN_TARGET_GPU
     };
 
     CV_EXPORTS std::vector< std::pair<Backend, Target> > getAvailableBackends();
