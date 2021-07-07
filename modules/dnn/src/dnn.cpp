@@ -234,7 +234,7 @@ private:
 
 #ifdef HAVE_WEBNN
         if (haveWebNN())
-            backends.push_back(std::make_pair(DNN_BACKEND_WEBNN, DNN_TARGET_WEBNN));
+            backends.push_back(std::make_pair(DNN_BACKEND_WEBNN, DNN_TARGET_CPU));
 #endif // HAVE_WEBNN
 
 #ifdef HAVE_OPENCL

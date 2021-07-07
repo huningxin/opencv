@@ -5,87 +5,73 @@
 // Copyright (C) 2018-2019, Intel Corporation, all rights reserved.
 // Third party copyrights are property of their respective owners.
 
-#ifndef __OPENCV_DNN_WEBNN_HPP__
-#define __OPENCV_DNN_WEBNN_HPP__
+#ifndef __OPENCV_DNN_OP_WEBNN_HPP__
+#define __OPENCV_DNN_OP_WEBNN_HPP__
 
 #include "opencv2/core/cvdef.h"
 #include "opencv2/core/cvstd.hpp"
 #include "opencv2/dnn.hpp"
-#include <opencv2/dnn/shape_utils.hpp>
-#include "opencv2/core/async.hpp"
-#include "opencv2/core/detail/async_promise.hpp"
 
 #ifdef HAVE_WEBNN
+
 #include <webnn/webnn_cpp.h>
 #include <webnn/webnn.h>
 #include <webnn/webnn_proc.h>
 #include <webnn_native/WebnnNative.h>
-#endif  // HAVE_WEBNN
 
+#endif  // HAVE_WEBNN
 
 namespace cv { namespace dnn {
 
 #ifdef HAVE_WEBNN
 
-constexpr bool haveWebNN() {
-#ifdef HAVE_WEBNN
-        return true;
-#else
-        return false;
-#endif
-    }
+class WebNNBackendNode;
 
-Mat WebNNMLOperandsToMat(const ml::MLOperand::Ptr& blob);
 
-void WebNNMLOperandsToMats(const std::vector<ml::MLOperand::Ptr>& blobs,
-                          std::vector<Mat>& mats);
-
-#ifdef HAVE_DNN_IE_NN_BUILDER_2019
-
-class InfEngineBackendNet
+class WebNNNet
 {
 public:
-    InfEngineBackendNet();
-
-    InfEngineBackendNet(InferenceEngine::CNNNetwork& net);
-
-    void addLayer(InferenceEngine::Builder::Layer& layer);
+    InfEngineNgraphNet(detail::NetImplBase& netImpl);
+    InfEngineNgraphNet(detail::NetImplBase& netImpl, InferenceEngine::CNNNetwork& net);
 
     void addOutput(const std::string& name);
 
-    void connect(const std::vector<Ptr<BackendWrapper> >& inputs,
-                 const std::vector<Ptr<BackendWrapper> >& outputs,
-                 const std::string& layerName);
-
     bool isInitialized();
-
     void init(Target targetId);
 
-    void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
-                 bool isAsync);
+    void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers, bool isAsync);
 
     void initPlugin(InferenceEngine::CNNNetwork& net);
+    ngraph::ParameterVector setInputs(const std::vector<cv::Mat>& inputs, const std::vector<std::string>& names);
 
+    void setUnconnectedNodes(Ptr<InfEngineNgraphNode>& node);
     void addBlobs(const std::vector<cv::Ptr<BackendWrapper> >& ptrs);
 
-    void reset();
+    void createNet(Target targetId);
+    void setNodePtr(std::shared_ptr<ngraph::Node>* ptr);
 
+    void reset();
 private:
-    InferenceEngine::Builder::Network netBuilder;
+    detail::NetImplBase& netImpl_;
+
+    void release();
+    int getNumComponents();
+    void dfs(std::shared_ptr<ngraph::Node>& node, std::vector<std::shared_ptr<ngraph::Node>>& comp,
+             std::unordered_map<std::string, bool>& used);
+
+    ngraph::ParameterVector inputs_vec;
+    std::shared_ptr<ngraph::Function> ngraph_function;
+    std::vector<std::vector<std::shared_ptr<ngraph::Node>>> components;
+    std::unordered_map<std::string, std::shared_ptr<ngraph::Node>* > all_nodes;
 
     InferenceEngine::ExecutableNetwork netExec;
     InferenceEngine::BlobMap allBlobs;
     std::string device_name;
-#if INF_ENGINE_VER_MAJOR_LE(2019010000)
-    InferenceEngine::InferenceEnginePluginPtr enginePtr;
-    InferenceEngine::InferencePlugin plugin;
-#else
     bool isInit = false;
-#endif
 
-    struct InfEngineReqWrapper
+    struct NgraphReqWrapper
     {
-        InfEngineReqWrapper() : isReady(true) {}
+        NgraphReqWrapper() : isReady(true) {}
 
         void makePromises(const std::vector<Ptr<BackendWrapper> >& outs);
 
@@ -94,49 +80,42 @@ private:
         std::vector<std::string> outsNames;
         bool isReady;
     };
-
-    std::vector<Ptr<InfEngineReqWrapper> > infRequests;
+    std::vector<Ptr<NgraphReqWrapper> > infRequests;
 
     InferenceEngine::CNNNetwork cnn;
     bool hasNetOwner;
-
-    std::map<std::string, int> layers;
     std::vector<std::string> requestedOutputs;
-
-    std::set<std::pair<int, int> > unconnectedPorts;
+    std::unordered_set<std::shared_ptr<ngraph::Node>> unconnectedNodes;
 };
 
-class InfEngineBackendNode : public BackendNode
+class WebNNBackendNode : public BackendNode
 {
 public:
-    InfEngineBackendNode(const InferenceEngine::Builder::Layer& layer);
+    InfEngineNgraphNode(const std::vector<Ptr<BackendNode> >& nodes, Ptr<Layer>& layer,
+                        std::vector<Mat*>& inputs, std::vector<Mat>& outputs,
+                        std::vector<Mat>& internals);
 
-    InfEngineBackendNode(Ptr<Layer>& layer, std::vector<Mat*>& inputs,
-                         std::vector<Mat>& outputs, std::vector<Mat>& internals);
+    InfEngineNgraphNode(std::shared_ptr<ngraph::Node>&& _node);
+    InfEngineNgraphNode(std::shared_ptr<ngraph::Node>& _node);
 
-    void connect(std::vector<Ptr<BackendWrapper> >& inputs,
-                 std::vector<Ptr<BackendWrapper> >& outputs);
+    void setName(const std::string& name);
 
     // Inference Engine network object that allows to obtain the outputs of this layer.
-    InferenceEngine::Builder::Layer layer;
-    Ptr<InfEngineBackendNet> net;
-    // CPU fallback in case of unsupported Inference Engine layer.
+    std::shared_ptr<ngraph::Node> node;
+    Ptr<InfEngineNgraphNet> net;
     Ptr<dnn::Layer> cvLayer;
 };
 
-class InfEngineBackendWrapper : public BackendWrapper
+class WebNNBackendWrapper : public BackendWrapper
 {
 public:
-    InfEngineBackendWrapper(int targetId, const Mat& m);
-
-    InfEngineBackendWrapper(Ptr<BackendWrapper> wrapper);
-
-    ~InfEngineBackendWrapper();
+    NgraphBackendWrapper(int targetId, const Mat& m);
+    NgraphBackendWrapper(Ptr<BackendWrapper> wrapper);
+    ~NgraphBackendWrapper();
 
     static Ptr<BackendWrapper> create(Ptr<BackendWrapper> wrapper);
 
     virtual void copyToHost() CV_OVERRIDE;
-
     virtual void setHostDirty() CV_OVERRIDE;
 
     InferenceEngine::DataPtr dataPtr;
@@ -144,25 +123,15 @@ public:
     AsyncArray futureMat;
 };
 
-InferenceEngine::Blob::Ptr wrapToInfEngineBlob(const Mat& m, InferenceEngine::Layout layout = InferenceEngine::Layout::ANY);
-
-InferenceEngine::Blob::Ptr wrapToInfEngineBlob(const Mat& m, const std::vector<size_t>& shape, InferenceEngine::Layout layout);
-
-InferenceEngine::DataPtr infEngineDataNode(const Ptr<BackendWrapper>& ptr);
-
-// Convert Inference Engine blob with FP32 precision to FP16 precision.
-// Allocates memory for a new blob.
-InferenceEngine::Blob::Ptr convertFp16(const InferenceEngine::Blob::Ptr& blob);
-
-void addConstantData(const std::string& name, InferenceEngine::Blob::Ptr data, InferenceEngine::Builder::Layer& l);
+InferenceEngine::DataPtr ngraphDataNode(const Ptr<BackendWrapper>& ptr);
 
 // This is a fake class to run networks from Model Optimizer. Objects of that
 // class simulate responses of layers are imported by OpenCV and supported by
 // Inference Engine. The main difference is that they do not perform forward pass.
-class InfEngineBackendLayer : public Layer
+class NgraphBackendLayer : public Layer
 {
 public:
-    InfEngineBackendLayer(const InferenceEngine::CNNNetwork &t_net_) : t_net(t_net_) {};
+    NgraphBackendLayer(const InferenceEngine::CNNNetwork &t_net_) : t_net(t_net_) {};
 
     virtual bool getMemoryShapes(const std::vector<MatShape> &inputs,
                                  const int requiredOutputs,
@@ -178,59 +147,20 @@ private:
     InferenceEngine::CNNNetwork t_net;
 };
 
+#endif  // HAVE_WebNN
 
-class InfEngineExtension : public InferenceEngine::IExtension
-{
-public:
-#if INF_ENGINE_VER_MAJOR_LT(INF_ENGINE_RELEASE_2020_2)
-    virtual void SetLogCallback(InferenceEngine::IErrorListener&) noexcept {}
+constexpr bool haveWebNN() {
+#ifdef HAVE_WEBNN
+        return true;
+#else
+        return false;
 #endif
-    virtual void Unload() noexcept {}
-    virtual void Release() noexcept {}
-    virtual void GetVersion(const InferenceEngine::Version*&) const noexcept {}
-
-    virtual InferenceEngine::StatusCode getPrimitiveTypes(char**&, unsigned int&,
-                                                          InferenceEngine::ResponseDesc*) noexcept
-    {
-        return InferenceEngine::StatusCode::OK;
     }
 
-    InferenceEngine::StatusCode getFactoryFor(InferenceEngine::ILayerImplFactory*& factory,
-                                              const InferenceEngine::CNNLayer* cnnLayer,
-                                              InferenceEngine::ResponseDesc* resp) noexcept;
-};
+void forwardWebNN(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
+                   Ptr<BackendNode>& node, bool isAsync);
 
-#endif  // HAVE_DNN_IE_NN_BUILDER_2019
+}}  // namespace cv::dnn
 
 
-CV__DNN_INLINE_NS_BEGIN
-
-bool isMyriadX();
-
-bool isArmComputePlugin();
-
-CV__DNN_INLINE_NS_END
-
-
-InferenceEngine::Core& getCore(const std::string& id);
-
-template<typename T = size_t>
-static inline std::vector<T> getShape(const Mat& mat)
-{
-    std::vector<T> result(mat.dims);
-    for (int i = 0; i < mat.dims; i++)
-        result[i] = (T)mat.size[i];
-    return result;
-}
-
-
-#endif  // HAVE_INF_ENGINE
-
-bool haveInfEngine();
-
-void forwardInfEngine(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
-                      Ptr<BackendNode>& node, bool isAsync);
-
-}}  // namespace dnn, namespace cv
-
-#endif  // __OPENCV_DNN_OP_INF_ENGINE_HPP__
+#endif  // __OPENCV_DNN_IE_NGRAPH_HPP__
