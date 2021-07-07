@@ -103,8 +103,8 @@ public:
                         std::vector<Mat*>& inputs, std::vector<Mat>& outputs,
                         std::vector<Mat>& internals);
 
-    WebNNBackendNode(std::shared_ptr<ngraph::Node>&& _node);
-    WebNNBackendNode(std::shared_ptr<ngraph::Node>& _node);
+    // WebNNBackendNode(std::shared_ptr<ngraph::Node>&& _node);
+    // WebNNBackendNode(std::shared_ptr<ngraph::Node>& _node);
 
     void setName(const std::string& name);
 
@@ -118,7 +118,7 @@ class WebNNBackendWrapper : public BackendWrapper
 {
 public:
     WebNNBackendWrapper(int targetId, const Mat& m);
-    WebNNBackendWrapper(Ptr<BackendWrapper> wrapper);
+    // WebNNBackendWrapper(Ptr<BackendWrapper> wrapper);
     ~WebNNBackendWrapper();
 
     static Ptr<BackendWrapper> create(Ptr<BackendWrapper> wrapper);
