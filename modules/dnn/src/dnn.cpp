@@ -1656,7 +1656,7 @@ struct Net::Impl : public detail::NetImplBase
             CV_Error(Error::StsNotImplemented, "This OpenCV version is built without support of Inference Engine + nGraph");
 #endif
         }
-        else if (preferableBackend == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH)
+        else if (preferableBackend == DNN_BACKEND_WEBNN)
         {
 #ifdef HAVE_WEBNN
             initWebNNBackend(blobsToKeep_);
