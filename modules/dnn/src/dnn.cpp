@@ -1130,8 +1130,8 @@ static Ptr<BackendWrapper> wrapMat(int backendId, int targetId, cv::Mat& m)
     }
     else if (backendId == DNN_BACKEND_WEBNN)
     {
-        CV_Assert(haveWebNN());
 #ifdef HAVE_WEBNN
+        CV_Assert(haveWebNN());
         return Ptr<BackendWrapper>(new WebNNBackendWrapper(targetId, m));
 #else
         CV_Error(Error::StsNotImplemented, "This OpenCV version is built without support of WebNN");
@@ -1280,9 +1280,9 @@ struct Net::Impl : public detail::NetImplBase
             }
             else if (preferableBackend == DNN_BACKEND_WEBNN)
             {
-                #ifdef HAVE_WEBNN
+#ifdef HAVE_WEBNN
                 return wrapMat(preferableBackend, preferableTarget, host);
-                #endif
+#endif
             }
             else if (preferableBackend == DNN_BACKEND_VKCOM)
             {
@@ -1426,8 +1426,11 @@ struct Net::Impl : public detail::NetImplBase
         }
 #endif
 #ifdef HAVE_WEBNN
-        CV_Assert(preferableBackend != DNN_BACKEND_WEBNN ||
-                  preferableTarget == DNN_TARGET_WEBNN);
+        if (preferableBackend == DNN_BACKEND_WEBNN)
+        {
+            CV_Assert(preferableTarget == DNN_TARGET_CPU ||
+                      preferableTarget == DNN_TARGET_GPU);
+        }
 #endif
         CV_Assert(preferableBackend != DNN_BACKEND_VKCOM ||
                   preferableTarget == DNN_TARGET_VULKAN);
@@ -2365,7 +2368,7 @@ struct Net::Impl : public detail::NetImplBase
     }
 #endif  // HAVE_DNN_NGRAPH
 
-    void initNgraphBackend(const std::vector<LayerPin>& blobsToKeep_)
+    void initWebNNBackend(const std::vector<LayerPin>& blobsToKeep_)
     {
 #ifdef HAVE_WEBNN
         // to do
@@ -3413,7 +3416,7 @@ struct Net::Impl : public detail::NetImplBase
                 }
                  else if (preferableBackend == DNN_BACKEND_WEBNN)
                 {
-                    forwardNgraph(ld.outputBlobsWrappers, node, isAsync);
+                    forwardWebNN(ld.outputBlobsWrappers, node, isAsync);
                 }
                 else if (preferableBackend == DNN_BACKEND_VKCOM)
                 {
