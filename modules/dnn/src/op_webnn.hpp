@@ -47,7 +47,7 @@ public:
 
     void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers);
 
-    void createNet(Target targetId);
+    void createGraph(Target targetId);
 
 private:
     ml::GraphBuilder builder;
@@ -74,7 +74,7 @@ class WebNNBackendWrapper : public BackendWrapper
 public:
     WebNNBackendWrapper(int targetId, const Mat& m);
     WebNNBackendWrapper(Ptr<BackendWrapper> wrapper);
-    ~WebNNBackendWrapper();
+    // ~WebNNBackendWrapper();
 
     static Ptr<BackendWrapper> create(Ptr<BackendWrapper> wrapper);
 

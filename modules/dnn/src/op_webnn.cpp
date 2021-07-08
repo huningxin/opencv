@@ -20,6 +20,35 @@ namespace cv { namespace dnn {
 
 #ifdef HAVE_WEBNN
 
+// WebNNGraph
+
+WebNNGraph::WebNNGraph()
+{
+
+}
+
+bool WebNNGraph::isInitialized()
+{
+
+}
+
+void WebNNGraph::init(Target targetId)
+{
+
+}
+
+void WebNNGraph::forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers)
+{
+
+}
+
+void WebNNGraph::createGraph(Target targetId)
+{
+
+}
+
+// WebNNBackendNode
+
 WebNNBackendNode::WebNNBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
                                          Ptr<Layer>& cvLayer_, std::vector<Mat*>& inputs,
                                          std::vector<Mat>& outputs, std::vector<Mat>& internals)
@@ -40,6 +69,43 @@ WebNNBackendNode::WebNNBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
 
     CV_Assert(!cvLayer->name.empty());
     setName(cvLayer->name);
+}
+
+void WebNNBackendNode::setName(const std::string& name)
+{
+
+}
+
+// WebNNBackendWrapper
+
+WebNNBackendWrapper::WebNNBackendWrapper(int targetId, const Mat& m)
+{
+
+}
+
+WebNNBackendWrapper::WebNNBackendWrapper(Ptr<BackendWrapper> wrapper)
+{
+
+}
+
+static Ptr<BackendWrapper> WebNNBackendWrapper::create(Ptr<BackendWrapper> wrapper)
+{
+
+}
+
+void WebNNBackendWrapper::copyToHost()
+{
+
+}
+
+void WebNNBackendWrapper::setHostDirty()
+{
+
+}
+
+void * WebNNBackendWrapper::getBuffer()
+{
+
 }
 
 #endif
