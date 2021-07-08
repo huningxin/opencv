@@ -95,17 +95,24 @@ static Ptr<BackendWrapper> WebNNBackendWrapper::create(Ptr<BackendWrapper> wrapp
 
 void WebNNBackendWrapper::copyToHost()
 {
-
+    CV_LOG_DEBUG(NULL, "WebNNBackendWrapper::copyToHost()");
 }
 
 void WebNNBackendWrapper::setHostDirty()
 {
-
+    CV_LOG_DEBUG(NULL, "WebNNBackendWrapper::setHostDirty()");
 }
 
 void * WebNNBackendWrapper::getBuffer()
 {
+    return buffer;
+}
 
+#else
+void forwardWebNN(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
+                   Ptr<BackendNode>& operand)
+{
+    CV_Assert(false && "WebNN is not enabled in this OpenCV build");
 }
 
 #endif
