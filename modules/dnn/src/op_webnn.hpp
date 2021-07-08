@@ -36,65 +36,26 @@ constexpr bool haveWebNN() {
 class WebNNBackendNode;
 
 
-// class WebNNNet
-// {
-// public:
-//     InfEngineNgraphNet(detail::NetImplBase& netImpl);
-//     InfEngineNgraphNet(detail::NetImplBase& netImpl, InferenceEngine::CNNNetwork& net);
+class WebNNGraph
+{
+public:
+    WebNNGraph();
 
-//     void addOutput(const std::string& name);
+    bool isInitialized();
 
-//     bool isInitialized();
-//     void init(Target targetId);
+    void init(Target targetId);
 
-//     void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers, bool isAsync);
+    void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers);
 
-//     void initPlugin(InferenceEngine::CNNNetwork& net);
-//     ngraph::ParameterVector setInputs(const std::vector<cv::Mat>& inputs, const std::vector<std::string>& names);
+    void createNet(Target targetId);
 
-//     void setUnconnectedNodes(Ptr<InfEngineNgraphNode>& node);
-//     void addBlobs(const std::vector<cv::Ptr<BackendWrapper> >& ptrs);
-
-//     void createNet(Target targetId);
-//     void setNodePtr(std::shared_ptr<ngraph::Node>* ptr);
-
-//     void reset();
-// private:
-//     detail::NetImplBase& netImpl_;
-
-//     void release();
-//     int getNumComponents();
-//     void dfs(std::shared_ptr<ngraph::Node>& node, std::vector<std::shared_ptr<ngraph::Node>>& comp,
-//              std::unordered_map<std::string, bool>& used);
-
-//     ngraph::ParameterVector inputs_vec;
-//     std::shared_ptr<ngraph::Function> ngraph_function;
-//     std::vector<std::vector<std::shared_ptr<ngraph::Node>>> components;
-//     std::unordered_map<std::string, std::shared_ptr<ngraph::Node>* > all_nodes;
-
-//     InferenceEngine::ExecutableNetwork netExec;
-//     InferenceEngine::BlobMap allBlobs;
-//     std::string device_name;
-//     bool isInit = false;
-
-//     struct NgraphReqWrapper
-//     {
-//         NgraphReqWrapper() : isReady(true) {}
-
-//         void makePromises(const std::vector<Ptr<BackendWrapper> >& outs);
-
-//         InferenceEngine::InferRequest req;
-//         std::vector<cv::AsyncPromise> outProms;
-//         std::vector<std::string> outsNames;
-//         bool isReady;
-//     };
-//     std::vector<Ptr<NgraphReqWrapper> > infRequests;
-
-//     InferenceEngine::CNNNetwork cnn;
-//     bool hasNetOwner;
-//     std::vector<std::string> requestedOutputs;
-//     std::unordered_set<std::shared_ptr<ngraph::Node>> unconnectedNodes;
-// };
+private:
+    ml::GraphBuilder builder;
+    ml::Context mContext;
+    ml::Graph mGraph;
+    ml::NamedResults mResults;
+    bool isInit = false;
+};
 
 class WebNNBackendNode : public BackendNode
 {
@@ -103,38 +64,32 @@ public:
                         std::vector<Mat*>& inputs, std::vector<Mat>& outputs,
                         std::vector<Mat>& internals);
 
-    // WebNNBackendNode(std::shared_ptr<ngraph::Node>&& _node);
-    // WebNNBackendNode(std::shared_ptr<ngraph::Node>& _node);
-
     void setName(const std::string& name);
 
-    // Inference Engine network object that allows to obtain the outputs of this layer.
-    // std::shared_ptr<ngraph::Node> node;
-    // Ptr<InfEngineNgraphNet> net;
-    Ptr<dnn::Layer> cvLayer;
+    std::shared_ptr<ml::Operand> operand;
 };
 
 class WebNNBackendWrapper : public BackendWrapper
 {
 public:
     WebNNBackendWrapper(int targetId, const Mat& m);
-    // WebNNBackendWrapper(Ptr<BackendWrapper> wrapper);
+    WebNNBackendWrapper(Ptr<BackendWrapper> wrapper);
     ~WebNNBackendWrapper();
 
     static Ptr<BackendWrapper> create(Ptr<BackendWrapper> wrapper);
 
     virtual void copyToHost() CV_OVERRIDE;
     virtual void setHostDirty() CV_OVERRIDE;
+    virtual void * getBuffer();
 
-    // InferenceEngine::DataPtr dataPtr;
-    // InferenceEngine::Blob::Ptr blob;
-    // AsyncArray futureMat;
+private:
+    void * buffer;
 };
 
 #endif  // HAVE_WebNN
 
 void forwardWebNN(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
-                   Ptr<BackendNode>& node, bool isAsync);
+                   Ptr<BackendNode>& operand);
 
 }}  // namespace cv::dnn
 
