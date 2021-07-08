@@ -20,96 +20,82 @@ namespace cv { namespace dnn {
 
 #ifdef HAVE_WEBNN
 
-// WebNNGraph
+// WebnnGraph
 
-WebNNGraph::WebNNGraph()
+WebnnGraph::WebnnGraph()
 {
 
 }
 
-bool WebNNGraph::isInitialized()
+bool WebnnGraph::isInitialized()
 {
 
 }
 
-void WebNNGraph::init(Target targetId)
+void WebnnGraph::init(Target targetId)
 {
 
 }
 
-void WebNNGraph::forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers)
+void WebnnGraph::forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers)
 {
 
 }
 
-void WebNNGraph::createGraph(Target targetId)
+void WebnnGraph::createGraph(Target targetId)
 {
 
 }
 
-// WebNNBackendNode
+// WebnnBackendNode
 
-WebNNBackendNode::WebNNBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
+WebnnBackendNode::WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
                                          Ptr<Layer>& cvLayer_, std::vector<Mat*>& inputs,
                                          std::vector<Mat>& outputs, std::vector<Mat>& internals)
-    : BackendNode(DNN_BACKEND_WEBNN), cvLayer(cvLayer_)
+    : BackendNode(DNN_BACKEND_WEBNN))
 {
-    std::ostringstream oss;
-    oss << (size_t)cvLayer.get();
-
-    std::map<std::string, InferenceEngine::Parameter> params = {
-        {"impl", oss.str()},
-        {"outputs", shapesToStr(outputs)},
-        {"internals", shapesToStr(internals)}
-    };
-
-    for (const auto& node : nodes)
-        inp_nodes.emplace_back(node.dynamicCast<WebNNBackendNode>()->node);
-    node = std::make_shared<NgraphCustomOp>(inp_nodes, params);
-
-    CV_Assert(!cvLayer->name.empty());
-    setName(cvLayer->name);
+    
 }
 
-void WebNNBackendNode::setName(const std::string& name)
+void WebnnBackendNode::setName(const std::string& name)
 {
 
 }
 
-// WebNNBackendWrapper
+// WebnnBackendWrapper
 
-WebNNBackendWrapper::WebNNBackendWrapper(int targetId, const Mat& m)
+WebnnBackendWrapper::WebnnBackendWrapper(int targetId, const Mat& m)
 {
 
 }
 
-WebNNBackendWrapper::WebNNBackendWrapper(Ptr<BackendWrapper> wrapper)
+WebnnBackendWrapper::WebnnBackendWrapper(Ptr<BackendWrapper> wrapper)
 {
 
 }
 
-static Ptr<BackendWrapper> WebNNBackendWrapper::create(Ptr<BackendWrapper> wrapper)
+static Ptr<BackendWrapper> WebnnBackendWrapper::create(Ptr<BackendWrapper> wrapper)
 {
 
 }
 
-void WebNNBackendWrapper::copyToHost()
+void WebnnBackendWrapper::copyToHost()
 {
-    CV_LOG_DEBUG(NULL, "WebNNBackendWrapper::copyToHost()");
+    CV_LOG_DEBUG(NULL, "WebnnBackendWrapper::copyToHost()");
 }
 
-void WebNNBackendWrapper::setHostDirty()
+void WebnnBackendWrapper::setHostDirty()
 {
-    CV_LOG_DEBUG(NULL, "WebNNBackendWrapper::setHostDirty()");
+    CV_LOG_DEBUG(NULL, "WebnnBackendWrapper::setHostDirty()");
 }
 
-void * WebNNBackendWrapper::getBuffer()
+void * WebnnBackendWrapper::getBuffer()
 {
     return buffer;
 }
 
 #else
-void forwardWebNN(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
+void forwardWebnn(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
                    Ptr<BackendNode>& operand)
 {
     CV_Assert(false && "WebNN is not enabled in this OpenCV build");

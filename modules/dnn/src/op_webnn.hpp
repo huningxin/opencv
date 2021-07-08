@@ -33,13 +33,13 @@ constexpr bool haveWebNN() {
 
 #ifdef HAVE_WEBNN
 
-class WebNNBackendNode;
+class WebnnBackendNode;
 
 
-class WebNNGraph
+class WebnnGraph
 {
 public:
-    WebNNGraph();
+    WebnnGraph();
 
     bool isInitialized();
 
@@ -53,28 +53,28 @@ private:
     ml::GraphBuilder builder;
     ml::Context mContext;
     ml::Graph mGraph;
-    ml::NamedResults mResults;
+    ml::NamedOperands mResults;
     bool isInit = false;
 };
 
-class WebNNBackendNode : public BackendNode
+class WebnnBackendNode : public BackendNode
 {
 public:
-    WebNNBackendNode(const std::vector<Ptr<BackendNode> >& nodes, Ptr<Layer>& layer,
+    WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes, Ptr<Layer>& layer,
                         std::vector<Mat*>& inputs, std::vector<Mat>& outputs,
                         std::vector<Mat>& internals);
 
     void setName(const std::string& name);
 
-    std::shared_ptr<ml::Operand> operand;
+    ml::Operand operand;
 };
 
-class WebNNBackendWrapper : public BackendWrapper
+class WebnnBackendWrapper : public BackendWrapper
 {
 public:
-    WebNNBackendWrapper(int targetId, const Mat& m);
-    WebNNBackendWrapper(Ptr<BackendWrapper> wrapper);
-    // ~WebNNBackendWrapper();
+    WebnnBackendWrapper(int targetId, const Mat& m);
+    WebnnBackendWrapper(Ptr<BackendWrapper> wrapper);
+    // ~WebnnBackendWrapper();
 
     static Ptr<BackendWrapper> create(Ptr<BackendWrapper> wrapper);
 
@@ -84,12 +84,13 @@ public:
 
 private:
     void * buffer;
+    ml::OperandDescriptor descriptor;
 };
 
 #endif  // HAVE_WebNN
 
-void forwardWebNN(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
-                   Ptr<BackendNode>& operand);
+void forwardWebnn(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
+                  Ptr<BackendNode>& operand);
 
 }}  // namespace cv::dnn
 
