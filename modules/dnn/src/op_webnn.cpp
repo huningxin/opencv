@@ -71,12 +71,15 @@ WebnnBackendWrapper::WebnnBackendWrapper(int targetId, const Mat& m)
 
 WebnnBackendWrapper::WebnnBackendWrapper(Ptr<BackendWrapper> wrapper)
 {
-
+    Ptr<WebnnBackendWrapper> webnnWrapper = wrapper.dynamicCast<WebnnBackendWrapper>();
+    CV_Assert(!webnnWrapper.empty());
+    buffer = webnnWrapper->buffer;
+    descriptor = webnnWrapper->descriptor;
 }
 
 static Ptr<BackendWrapper> WebnnBackendWrapper::create(Ptr<BackendWrapper> wrapper)
 {
-
+    return Ptr<BackendWrapper>(new WebnnBackendWrapper(wrapper));
 }
 
 void WebnnBackendWrapper::copyToHost()
