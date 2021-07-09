@@ -63,12 +63,7 @@ WebnnBackendNode::WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
                                          std::vector<Mat>& outputs, std::vector<Mat>& internals)
     : BackendNode(DNN_BACKEND_WEBNN))
 {
-    
-}
-
-void WebnnBackendNode::setName(const std::string& name)
-{
-
+    // not necessary for graph build. This is for the implementation of dropout.
 }
 
 // WebnnBackendWrapper

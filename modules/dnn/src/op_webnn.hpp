@@ -64,8 +64,6 @@ public:
                         std::vector<Mat*>& inputs, std::vector<Mat>& outputs,
                         std::vector<Mat>& internals);
 
-    void setName(const std::string& name);
-
     ml::Operand operand;
 };
 
