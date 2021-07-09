@@ -63,8 +63,14 @@ WebnnBackendNode::WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
                                          std::vector<Mat>& outputs, std::vector<Mat>& internals)
     : BackendNode(DNN_BACKEND_WEBNN))
 {
-    // not necessary for graph build. This is for the implementation of dropout.
+    // to do. Not necessary now.
 }
+
+WebnnBackendNode::WebnnBackendNode(std::shared_ptr<ml::Operand>&& _operand)
+    : BackendNode(DNN_BACKEND_WEBNN), operand(std::move(_operand)) {}
+
+WebnnBackendNode::WebnnBackendNode(std::shared_ptr<ml::Operand>&& _operand)
+    : BackendNode(DNN_BACKEND_WEBNN), operand(_operand) {}
 
 // WebnnBackendWrapper
 
@@ -73,18 +79,27 @@ WebnnBackendWrapper::WebnnBackendWrapper(const Mat& m)
     std::vector<uint32_t> shape = getShape<uint32_t>(m);
     if (m.type() == CV_16F)
     {
-        buffer = (float16_t*) m.data;
-        descriptor = {new ml::OperandType(Float16), shape.data(), (uint32_t)shape.size()};
+        std::unique_ptr<float16_t> dataBuffer = (float16_t*) m.data;
+        buffer = dataBuffer;
+        shapeStorer.type = ml::Operand::Float16;
+        shapeStorer.dataShape = shape;
+        descriptor = {shapeStorer.type, shapeStorer.dataShape, (uint32_t)shape.size()};
     }
     else if (m.type() == CV_32F)
     {
-        buffer = (float32_t*) m.data;
-        descriptor = {new ml::OperandType(Float32), shape.data(), (uint32_t)shape.size()};
+        std::unique_ptr<float32_t> dataBuffer = std::move((float32_t*) m.data);
+        buffer = dataBuffer;
+        shapeStorer.type = ml::Operand::Float32;
+        shapeStorer.dataShape = shape;
+        descriptor = {shapeStorer.type, shapeStorer.dataShape, (uint32_t)shape.size()};
     }
     else if (m.type() == CV_8U)
     {
-        buffer = (uint8_t*) m.data;
-        descriptor = {new ml::OperandType(Uint8), shape.data(), (uint32_t)shape.size()};
+        std::unique_ptr<uint8_t> dataBuffer = std::move((uint8_t*) m.data);
+        buffer = dataBuffer;
+        shapeStorer.type = ml::Operand::Uint8;
+        shapeStorer.dataShape = shape;
+        descriptor = {shapeStorer.type, shapeStorer.dataShape, (uint32_t)shape.size()};
     }
     else
         CV_Error(Error::StsNotImplemented, format("Unsupported data type %s", typeToString(m.type()).c_str()));

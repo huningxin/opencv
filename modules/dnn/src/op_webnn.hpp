@@ -65,6 +65,7 @@ public:
                         std::vector<Mat>& internals);
 
     ml::Operand operand;
+    WebnnGraph graph;
 };
 
 class WebnnBackendWrapper : public BackendWrapper
@@ -83,6 +84,10 @@ public:
 private:
     void * buffer;
     ml::OperandDescriptor descriptor;
+    struct Descriptor{
+        ml::OperandType type;
+        std::vector<uint32_t> dataShape;
+    } shapeStorer;
 };
 
 #endif  // HAVE_WebNN
