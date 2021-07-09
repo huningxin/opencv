@@ -20,6 +20,15 @@ namespace cv { namespace dnn {
 
 #ifdef HAVE_WEBNN
 
+template<typename T>
+static inline std::vector<T> getShape(const Mat& mat)
+{
+    std::vector<T> result(mat.dims);
+    for (int i = 0; i < mat.dims; i++)
+        result[i] = (T)mat.size[i];
+    return result;
+}
+
 // WebnnGraph
 
 WebnnGraph::WebnnGraph()
@@ -64,9 +73,26 @@ void WebnnBackendNode::setName(const std::string& name)
 
 // WebnnBackendWrapper
 
-WebnnBackendWrapper::WebnnBackendWrapper(int targetId, const Mat& m)
+WebnnBackendWrapper::WebnnBackendWrapper(const Mat& m)
 {
-
+    std::vector<uint32_t> shape = getShape<uint32_t>(m);
+    if (m.type() == CV_16F)
+    {
+        buffer = (float16_t*) m.data;
+        descriptor = {new ml::OperandType(Float16), shape.data(), (uint32_t)shape.size()};
+    }
+    else if (m.type() == CV_32F)
+    {
+        buffer = (float32_t*) m.data;
+        descriptor = {new ml::OperandType(Float32), shape.data(), (uint32_t)shape.size()};
+    }
+    else if (m.type() == CV_8U)
+    {
+        buffer = (uint8_t*) m.data;
+        descriptor = {new ml::OperandType(Uint8), shape.data(), (uint32_t)shape.size()};
+    }
+    else
+        CV_Error(Error::StsNotImplemented, format("Unsupported data type %s", typeToString(m.type()).c_str()));
 }
 
 WebnnBackendWrapper::WebnnBackendWrapper(Ptr<BackendWrapper> wrapper)
