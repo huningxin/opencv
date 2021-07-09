@@ -72,7 +72,7 @@ public:
 class WebnnBackendWrapper : public BackendWrapper
 {
 public:
-    WebnnBackendWrapper(int targetId, const Mat& m);
+    WebnnBackendWrapper(const Mat& m);
     WebnnBackendWrapper(Ptr<BackendWrapper> wrapper);
     // ~WebnnBackendWrapper();
 
