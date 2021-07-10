@@ -82,12 +82,9 @@ public:
     virtual void * getBuffer();
 
 private:
-    void * buffer;
+    std::unique_ptr<char> buffer;
     ml::OperandDescriptor descriptor;
-    struct Descriptor{
-        ml::OperandType type;
-        std::vector<uint32_t> dataShape;
-    } shapeStorer;
+    std::vector<uint32_t> dimensions;
 };
 
 #endif  // HAVE_WebNN

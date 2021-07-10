@@ -76,30 +76,27 @@ WebnnBackendNode::WebnnBackendNode(std::shared_ptr<ml::Operand>&& _operand)
 
 WebnnBackendWrapper::WebnnBackendWrapper(const Mat& m)
 {
-    std::vector<uint32_t> shape = getShape<uint32_t>(m);
+    dimensions = getShape<uint32_t>(m);
     if (m.type() == CV_16F)
     {
-        std::unique_ptr<float16_t> dataBuffer = (float16_t*) m.data;
-        buffer = dataBuffer;
-        shapeStorer.type = ml::Operand::Float16;
-        shapeStorer.dataShape = shape;
-        descriptor = {shapeStorer.type, shapeStorer.dataShape, (uint32_t)shape.size()};
+        dataSize = m.total() * m.elemSize();
+        buffer.reset(new char[dataSize]);
+        std::memcpy(buffer.get(), (float16_t*)m.data, dataSize);
+        descriptor = {ml::Operand::Float16, dimensions.data(), dimensions.size()};
     }
     else if (m.type() == CV_32F)
     {
-        std::unique_ptr<float32_t> dataBuffer = std::move((float32_t*) m.data);
-        buffer = dataBuffer;
-        shapeStorer.type = ml::Operand::Float32;
-        shapeStorer.dataShape = shape;
-        descriptor = {shapeStorer.type, shapeStorer.dataShape, (uint32_t)shape.size()};
+        dataSize = m.total() * m.elemSize();
+        buffer.reset(new char[dataSize]);
+        std::memcpy(buffer.get(), (float32_t*)m.data, dataSize);
+        descriptor = {ml::Operand::Float32, dimensions.data(), dimensions.size()};
     }
     else if (m.type() == CV_8U)
     {
-        std::unique_ptr<uint8_t> dataBuffer = std::move((uint8_t*) m.data);
-        buffer = dataBuffer;
-        shapeStorer.type = ml::Operand::Uint8;
-        shapeStorer.dataShape = shape;
-        descriptor = {shapeStorer.type, shapeStorer.dataShape, (uint32_t)shape.size()};
+        dataSize = m.total() * m.elemSize();
+        buffer.reset(new char[dataSize]);
+        std::memcpy(buffer.get(), (uint8_t*)m.data, dataSize);
+        descriptor = {ml::Operand::Uint8, dimensions.data(), dimensions.size()};
     }
     else
         CV_Error(Error::StsNotImplemented, format("Unsupported data type %s", typeToString(m.type()).c_str()));
