@@ -33,37 +33,76 @@ static inline std::vector<T> getShape(const Mat& mat)
 
 WebnnGraph::WebnnGraph()
 {
-
+    mContext = ml::Context(webnn_native::CreateContext());
+    builder = ml::CreateGraphBuilder(mContext);
 }
 
 bool WebnnGraph::isInitialized()
 {
-
+    return isInit;
 }
 
-void WebnnGraph::init(Target targetId)
+// For common use
+ml::Operand WebnnGraph::addOperand(std::string name, std::vector<int32_t> inputDimension, 
+                          const std::vector<cv::Ptr<BackendWrapper> >& ptr,
+                          std::unique_ptr<char> weightData,
+                          uint32_t & byteOffset)
 {
-
+    const ml::Operand input = utils::BuildInput(builder, "input", inputDimension.data());
+    Ptr<WebnnBackendWrapper> weightDimension = ptr.dynamicCast<WebnnBackendWrapper>();
+    const std::vector<int32_t> weightShape = weightDimension.dimensions;
+    const float* weightData = reinterpret_cast<float*>(weightsData.get() + byteOffset);
+    const uint32_t weightDataLength = product(weightShape) * sizeof(float);
+    byteOffset += weightDataLength;
+    const ml::Operand weightConstant = utils::BuildConstant(builder, weightShape, 
+                                                            weightData,  weightDataLength);
+    // the builder builds the first operand according to the input layer name,
+    // like const ml::Operand conv1 = builder.Conv2d(input, weightConstant);
 }
 
-void WebnnGraph::forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers)
+ml::Operand WebnnGraph::addOperand(std::string name, const ml::Operand inputOperand,
+                          const std::vector<cv::Ptr<BackendWrapper> >& ptr,
+                          std::unique_ptr<char> weightData,
+                          uint32_t & byteOffset)
 {
-
+    Ptr<WebnnBackendWrapper> weightDimension = ptr.dynamicCast<WebnnBackendWrapper>();
+    const std::vector<int32_t> weightShape = weightDimension.dimensions;
+    const float* weightData = reinterpret_cast<float*>(weightsData.get() + byteOffset);
+    const uint32_t weightDataLength = product(weightShape) * sizeof(float);
+    byteOffset += weightDataLength;
+    const ml::Operand weightConstant = utils::BuildConstant(builder, weightShape, 
+                                                            weightData,  weightDataLength);
+    // the builder builds the first operand according to the input layer name,
+    // like const ml::Operand conv1 = builder.Conv2d(input, weightConstant);
 }
 
-void WebnnGraph::createGraph(Target targetId)
+ml::Operand addReLU(std::string name, std::vector<int32_t> inputDimension);
 {
+    const ml::Operand input = utils::BuildInput(builder, "input", inputDimension.data());
+    const ml::Operand relu = builder.Relu(input);
+    return relu;
+}
 
+
+
+void WebnnGraph::forward(const void* inputData, size_t inputLength)
+{
+    mResults = utils::AwaitCompute(mGraph, {{"input", {inputData, inputLength}}});
+}
+
+void WebnnGraph::createGraph(const ml::Operand outputOperand)
+{
+    mGraph = utils::AwaitBuild(builder, {{"output", outputOperand}});
+    isInit = true;
 }
 
 // WebnnBackendNode
 
-WebnnBackendNode::WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
-                                         Ptr<Layer>& cvLayer_, std::vector<Mat*>& inputs,
-                                         std::vector<Mat>& outputs, std::vector<Mat>& internals)
+WebnnBackendNode::WebnnBackendNode(const ml::Operand layerOperand)
     : BackendNode(DNN_BACKEND_WEBNN))
 {
-    // to do. Not necessary now.
+    operand = layerOperand;
+    graph = WebnnGraph();
 }
 
 WebnnBackendNode::WebnnBackendNode(std::shared_ptr<ml::Operand>&& _operand)

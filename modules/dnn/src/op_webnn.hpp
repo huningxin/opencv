@@ -43,11 +43,22 @@ public:
 
     bool isInitialized();
 
-    void init(Target targetId);
+    ml::Operand addOperand(std::string name, std::vector<int32_t> inputDimension, 
+                          const std::vector<cv::Ptr<BackendWrapper> >& ptrs,
+                          std::unique_ptr<char> weightData,
+                          uint32_t & byteOffset);
+
+    ml::Operand addOperand(std::string name, const ml::Operand inputOperand,
+                          const std::vector<cv::Ptr<BackendWrapper> >& ptrs,
+                          std::unique_ptr<char> weightData,
+                          uint32_t & byteOffset);
+    
+    // for relu test
+    ml::Operand addReLU(std::string name, std::vector<int32_t> inputDimension);
 
     void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers);
 
-    void createGraph(Target targetId);
+    void createGraph(const ml::Operand outputOperand);
 
 private:
     ml::GraphBuilder builder;
@@ -60,9 +71,7 @@ private:
 class WebnnBackendNode : public BackendNode
 {
 public:
-    WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes, Ptr<Layer>& layer,
-                        std::vector<Mat*>& inputs, std::vector<Mat>& outputs,
-                        std::vector<Mat>& internals);
+    WebnnBackendNode(const ml::Operand layerOperand);
 
     ml::Operand operand;
     WebnnGraph graph;
