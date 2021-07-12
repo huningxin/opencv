@@ -20,6 +20,7 @@
 #include <webnn_native/WebnnNative.h>
 
 #include <unordered_map>
+#include <unordered_set>
 
 #endif  // HAVE_WEBNN
 
@@ -37,6 +38,8 @@ constexpr bool haveWebnn() {
 
 class WebnnBackendNode;
 class WebnnBackendWrapper;
+
+
 
 class WebnnNet
 {
@@ -60,7 +63,6 @@ public:
 
     void reset();
 
-private:
     ml::GraphBuilder builder;
     ml::Context context;
     ml::Graph graph;
@@ -72,7 +74,10 @@ private:
     bool isInit = false;
 
     std::vector<std::string> requestedOutputs;
-    std::vector<cv::Ptr<WebnnBackendNode>> unconnectedNodes;
+
+    std::vector<std::string> inputNames;
+    std::vector<std::string> outputNames;
+    ml::NamedOperands namedOperands;
 };
 
 class WebnnBackendNode : public BackendNode
@@ -84,20 +89,21 @@ public:
     std::string name;
     ml::Operand operand;
     Ptr<WebnnNet> net;
-    Ptr<dnn::Layer> cvLayer;
 };
 
 class WebnnBackendWrapper : public BackendWrapper
 {
 public:
-    WebnnBackendWrapper(int targetId, const Mat& m);
+    WebnnBackendWrapper(int targetId, Mat& m);
     ~WebnnBackendWrapper();
 
     virtual void copyToHost() CV_OVERRIDE;
     virtual void setHostDirty() CV_OVERRIDE;
 
     std::string name;
+    Mat* host;
     std::unique_ptr<char> buffer;
+    size_t size;
     std::vector<int32_t> dimensions;
     ml::OperandDescriptor descriptor;
 };

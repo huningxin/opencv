@@ -236,7 +236,6 @@ private:
         if (haveWebnn())
         {
             backends.push_back(std::make_pair(DNN_BACKEND_WEBNN, DNN_TARGET_CPU));
-            backends.push_back(std::make_pair(DNN_BACKEND_WEBNN, DNN_TARGET_OPENCL));
         }
 #endif // HAVE_WEBNN
 
@@ -2519,7 +2518,9 @@ struct Net::Impl : public detail::NetImplBase
 
                     auto inps = net->setInputs(inputs, inputNames);
                     for (auto& inp : inps) {
-                        inputNodes.emplace_back(Ptr<BackendNode>(new WebnnBackendNode(inp)));
+                        WebnnBackendNode* node = new WebnnBackendNode(inp);
+                        node->net = net;
+                        inputNodes.emplace_back(Ptr<BackendNode>(node));
                     }
                 }
             }

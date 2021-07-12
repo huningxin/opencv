@@ -49,6 +49,12 @@ WebnnNet::WebnnNet()
 {
     hasNetOwner = false;
     device_name = "CPU";
+
+    WebnnProcTable backendProcs = webnn_native::GetProcs();
+    webnnProcSetProcs(&backendProcs);
+    context = ml::Context(webnn_native::CreateContext());
+    builder = ::ml::CreateGraphBuilder(context);
+    namedOperands = ::ml::CreateNamedOperands();
 }
 
 void WebnnNet::addOutput(const std::string& name)
@@ -74,22 +80,39 @@ void WebnnNet::init(Target targetId)
             CV_Error(Error::StsNotImplemented, "Unknown target");
     };
 
-    CV_Error(Error::StsNotImplemented, "Create ml::Graph");
+    graph = builder.BuildSync(namedOperands);
+    isInit = true;
 }
 
 std::vector<ml::Operand> WebnnNet::setInputs(const std::vector<cv::Mat>& inputs,
-                                            const std::vector<std::string>& names) {
+                                             const std::vector<std::string>& names) {
     CV_Assert_N(inputs.size() == names.size());
     std::vector<ml::Operand> current_inp;
     for (size_t i = 0; i < inputs.size(); i++)
     {
-        CV_Error(Error::StsNotImplemented, "Create ml::Operand");
+        auto& m = inputs[i];
+        std::vector<int32_t> dimensions = getShape<int32_t>(m);
+        ml::OperandDescriptor descriptor;
+        descriptor.dimensions = dimensions.data();
+        descriptor.dimensionsCount = dimensions.size();
+        if (m.type() == CV_32F)
+        {
+            descriptor.type = ml::OperandType::Float32;
+        }
+        else
+        {
+            CV_Error(Error::StsNotImplemented, format("Unsupported data type %s", typeToString(m.type()).c_str()));
+        }
+        ml::Operand inputOperand = builder.Input(names[i].c_str(), &descriptor);
+        current_inp.push_back(std::move(inputOperand));
     }
+    inputNames = names;
     return current_inp;
 }
 
 void WebnnNet::setUnconnectedNodes(Ptr<WebnnBackendNode>& node) {
-    unconnectedNodes.push_back(node);
+    outputNames.push_back(node->name);
+    namedOperands.Set(outputNames.back().c_str(), node->operand);
 }
 
 bool WebnnNet::isInitialized()
@@ -117,7 +140,32 @@ void WebnnNet::addBlobs(const std::vector<cv::Ptr<BackendWrapper> >& ptrs)
 void WebnnNet::forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers, bool isAsync)
 {
     CV_LOG_DEBUG(NULL, "WebnnNet::forward(" << (isAsync ? "async" : "sync") << ")");
-    CV_Error(Error::StsNotImplemented, "Implement ml::Graph.compute");
+    ml::NamedInputs named_inputs = ::ml::CreateNamedInputs();
+    std::vector<ml::Input> inputs(inputNames.size());
+    for (int i = 0; i < inputNames.size(); ++i) {
+        const std::string& name = inputNames[i];
+        ml::Input& input = inputs[i];
+        auto blobIt = allBlobs.find(name);
+        CV_Assert(blobIt != allBlobs.end());
+        const Ptr<WebnnBackendWrapper> wrapper = blobIt->second;
+        input.buffer = wrapper->host->data;
+        input.size = wrapper->size;
+        named_inputs.Set(name.c_str(), &input);
+    }
+    std::vector<Ptr<WebnnBackendWrapper> > outs = webnnWrappers(outBlobsWrappers);
+    ml::NamedOutputs named_outputs = ::ml::CreateNamedOutputs();
+    std::vector<ml::Output> outputs(outs.size());
+    for (int i = 0; i < outs.size(); ++i) {
+        const std::string& name = outs[i]->name;
+        ml::Output& output = outputs[i];
+        output.buffer = outs[i]->host->data;
+        output.size = outs[i]->size;
+        named_outputs.Set(name.c_str(), &output);
+    }
+    ml::ComputeGraphStatus status = graph.ComputeSync(named_inputs, named_outputs);
+    if (status != ::ml::ComputeGraphStatus::Success) {
+        CV_Error(Error::StsAssert, format("Failed to compute: %d", int(status)));
+    }
 }
 
 // WebnnBackendNode
@@ -128,21 +176,24 @@ WebnnBackendNode::WebnnBackendNode(ml::Operand& _operand)
     : BackendNode(DNN_BACKEND_WEBNN), operand(_operand) {}
 
 // WebnnBackendWrapper
-WebnnBackendWrapper::WebnnBackendWrapper(int targetId, const cv::Mat& m)
+WebnnBackendWrapper::WebnnBackendWrapper(int targetId, cv::Mat& m)
     : BackendWrapper(DNN_BACKEND_WEBNN, targetId)
 {
-    size_t dataSize = m.total() * m.elemSize();
-    buffer.reset(new char[dataSize]);
-    std::memcpy(buffer.get(), m.data, dataSize);
-    dimensions = getShape<int32_t>(m);
-    descriptor.dimensions = dimensions.data();
-    descriptor.dimensionsCount = dimensions.size();
+    size = m.total() * m.elemSize();
+    // buffer.reset(new char[size]);
+    // std::memcpy(buffer.get(), m.data, size);
+    // dimensions = getShape<int32_t>(m);
+    // descriptor.dimensions = dimensions.data();
+    // descriptor.dimensionsCount = dimensions.size();
     if (m.type() == CV_32F)
     {
         descriptor.type = ml::OperandType::Float32;
     }
     else
+    {
         CV_Error(Error::StsNotImplemented, format("Unsupported data type %s", typeToString(m.type()).c_str()));
+    }
+    host = &m;
 }
 
 WebnnBackendWrapper::~WebnnBackendWrapper()

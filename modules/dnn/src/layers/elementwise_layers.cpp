@@ -47,9 +47,11 @@
 #include "../op_inf_engine.hpp"
 #include "../ie_ngraph.hpp"
 #include "../op_vkcom.hpp"
+#include "../op_webnn.hpp"
 
 #include <opencv2/dnn/shape_utils.hpp>
 #include <iostream>
+#include <limits>
 
 #ifdef HAVE_OPENCL
 #include "opencl_kernels_dnn.hpp"
@@ -181,6 +183,17 @@ public:
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    virtual Ptr<BackendNode> initWebnn(const std::vector<Ptr<BackendWrapper> >& inputs, const std::vector<Ptr<BackendNode> >& nodes) CV_OVERRIDE
+    {
+        Ptr<WebnnBackendNode> node = nodes[0].dynamicCast<WebnnBackendNode>();
+        auto& webnnInpOperand = node->operand;
+        auto& webnnGraphBuilder = node->net->builder;
+        auto operand = func.initWebnnAPI(webnnGraphBuilder, webnnInpOperand);
+        return Ptr<BackendNode>(new WebnnBackendNode(operand));
+    }
+#endif
+
     virtual Ptr<BackendNode> initVkCom(const std::vector<Ptr<BackendWrapper> >& inputs) CV_OVERRIDE
     {
 #ifdef HAVE_VULKAN
@@ -307,6 +320,12 @@ struct ReLUFunctor : public BaseFunctor
         if (backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH)
             return true;
 #endif
+#ifdef HAVE_WEBNN
+        if (backendId == DNN_BACKEND_WEBNN) {
+            // TODO: support PRELU
+            return slope == 0;
+        }
+#endif
         return backendId == DNN_BACKEND_OPENCV ||
                backendId == DNN_BACKEND_CUDA ||
                backendId == DNN_BACKEND_HALIDE ||
@@ -427,6 +446,13 @@ struct ReLUFunctor : public BaseFunctor
         return std::make_shared<ngraph::op::Relu>(node);
     }
 #endif  // HAVE_DNN_NGRAPH
+
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        return builder.Relu(input);
+    }
+#endif
 
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
@@ -551,6 +577,15 @@ struct ReLU6Functor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
+
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
     {
@@ -643,6 +678,15 @@ struct TanHFunctor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
+
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
     {
@@ -734,6 +778,15 @@ struct SwishFunctor : public BaseFunctor
         return std::make_shared<ngraph::op::v1::Multiply>(node, sigmoid);
     }
 #endif  // HAVE_DNN_NGRAPH
+
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
 
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
@@ -840,6 +893,15 @@ struct MishFunctor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
+
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
     {
@@ -932,6 +994,15 @@ struct SigmoidFunctor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
+
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
     {
@@ -1023,6 +1094,15 @@ struct ELUFunctor : public BaseFunctor
         return std::make_shared<ngraph::op::Elu>(node, 1.0);
     }
 #endif  // HAVE_DNN_NGRAPH
+
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
 
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
@@ -1122,6 +1202,15 @@ struct AbsValFunctor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
+
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
     {
@@ -1214,6 +1303,15 @@ struct BNLLFunctor : public BaseFunctor
         CV_Error(Error::StsNotImplemented, "");
     }
 #endif  // HAVE_DNN_NGRAPH
+
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
 
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
@@ -1367,6 +1465,15 @@ struct PowerFunctor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
+
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
     {
@@ -1507,6 +1614,15 @@ struct ExpFunctor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
+
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
     {
@@ -1643,6 +1759,15 @@ struct ChannelsPReLUFunctor : public BaseFunctor
         return std::make_shared<ngraph::op::PRelu>(node, slope);
     }
 #endif  // HAVE_DNN_NGRAPH
+
+#ifdef HAVE_WEBNN
+    ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
+    {
+        CV_Error(Error::StsNotImplemented, "");
+        ml::Operand operand;
+        return operand;
+    }
+#endif
 
 #ifdef HAVE_VULKAN
     std::shared_ptr<vkcom::OpBase> initVkCom()
