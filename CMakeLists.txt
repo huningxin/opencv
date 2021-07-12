@@ -1608,6 +1608,15 @@ if(WITH_VULKAN OR HAVE_VULKAN)
   endif()
 endif()
 
+if(WITH_WEBNN OR HAVE_WEBNN)
+  status("")
+  status("  WebNN:"     HAVE_WEBNN THEN "YES" ELSE "NO")
+  if(HAVE_WEBNN)
+    status("    Include path:"  WEBNN_HEADER_DIRS THEN "${WEBNN_HEADER_DIRS}" ELSE "NO")
+    status("    Link libraries:" WEBNN_LIBRARIES THEN "${WEBNN_LIBRARIES}" ELSE "NO")
+  endif()
+endif()
+
 if(WITH_OPENCL OR HAVE_OPENCL)
   ocv_build_features_string(opencl_features
     IF HAVE_OPENCL_SVM THEN "SVM"

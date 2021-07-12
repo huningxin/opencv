@@ -20,6 +20,8 @@ namespace cv { namespace dnn {
 
 #ifdef HAVE_WEBNN
 
+static std::string kDefaultInpLayerName = "opencv_webnn_empty_inp_layer_name";
+
 template<typename T>
 static inline std::vector<T> getShape(const Mat& mat)
 {
@@ -29,110 +31,150 @@ static inline std::vector<T> getShape(const Mat& mat)
     return result;
 }
 
-// WebnnGraph
-
-WebnnGraph::WebnnGraph()
+static std::vector<Ptr<WebnnBackendWrapper> >
+webnnWrappers(const std::vector<Ptr<BackendWrapper> >& ptrs)
 {
-
+    std::vector<Ptr<WebnnBackendWrapper> > wrappers(ptrs.size());
+    for (int i = 0; i < ptrs.size(); ++i)
+    {
+        CV_Assert(!ptrs[i].empty());
+        wrappers[i] = ptrs[i].dynamicCast<WebnnBackendWrapper>();
+        CV_Assert(!wrappers[i].empty());
+    }
+    return wrappers;
 }
 
-bool WebnnGraph::isInitialized()
+// WebnnNet
+WebnnNet::WebnnNet()
 {
-
+    hasNetOwner = false;
+    device_name = "CPU";
 }
 
-void WebnnGraph::init(Target targetId)
+void WebnnNet::addOutput(const std::string& name)
 {
-
+    requestedOutputs.push_back(name);
 }
 
-void WebnnGraph::forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers)
-{
-
+void WebnnNet::createNet(Target targetId) {
+    init(targetId);
 }
 
-void WebnnGraph::createGraph(Target targetId)
+void WebnnNet::init(Target targetId)
 {
+    switch (targetId)
+    {
+        case DNN_TARGET_CPU:
+            device_name = "CPU";
+            break;
+        case DNN_TARGET_OPENCL:
+            device_name = "GPU";
+            break;
+        default:
+            CV_Error(Error::StsNotImplemented, "Unknown target");
+    };
 
+    CV_Error(Error::StsNotImplemented, "Create ml::Graph");
+}
+
+std::vector<ml::Operand> WebnnNet::setInputs(const std::vector<cv::Mat>& inputs,
+                                            const std::vector<std::string>& names) {
+    CV_Assert_N(inputs.size() == names.size());
+    std::vector<ml::Operand> current_inp;
+    for (size_t i = 0; i < inputs.size(); i++)
+    {
+        CV_Error(Error::StsNotImplemented, "Create ml::Operand");
+    }
+    return current_inp;
+}
+
+void WebnnNet::setUnconnectedNodes(Ptr<WebnnBackendNode>& node) {
+    unconnectedNodes.push_back(node);
+}
+
+bool WebnnNet::isInitialized()
+{
+    return isInit;
+}
+
+void WebnnNet::reset()
+{
+    allBlobs.clear();
+    isInit = false;
+}
+
+void WebnnNet::addBlobs(const std::vector<cv::Ptr<BackendWrapper> >& ptrs)
+{
+    auto wrappers = webnnWrappers(ptrs);
+    for (const auto& wrapper : wrappers)
+    {
+        std::string name = wrapper->name;
+        name = name.empty() ? kDefaultInpLayerName : name;
+        allBlobs.insert({name, wrapper});
+    }
+}
+
+void WebnnNet::forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers, bool isAsync)
+{
+    CV_LOG_DEBUG(NULL, "WebnnNet::forward(" << (isAsync ? "async" : "sync") << ")");
+    CV_Error(Error::StsNotImplemented, "Implement ml::Graph.compute");
 }
 
 // WebnnBackendNode
-
-WebnnBackendNode::WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes,
-                                         Ptr<Layer>& cvLayer_, std::vector<Mat*>& inputs,
-                                         std::vector<Mat>& outputs, std::vector<Mat>& internals)
-    : BackendNode(DNN_BACKEND_WEBNN))
-{
-    // to do. Not necessary now.
-}
-
-WebnnBackendNode::WebnnBackendNode(std::shared_ptr<ml::Operand>&& _operand)
+WebnnBackendNode::WebnnBackendNode(ml::Operand&& _operand)
     : BackendNode(DNN_BACKEND_WEBNN), operand(std::move(_operand)) {}
 
-WebnnBackendNode::WebnnBackendNode(std::shared_ptr<ml::Operand>&& _operand)
+WebnnBackendNode::WebnnBackendNode(ml::Operand& _operand)
     : BackendNode(DNN_BACKEND_WEBNN), operand(_operand) {}
 
 // WebnnBackendWrapper
-
-WebnnBackendWrapper::WebnnBackendWrapper(const Mat& m)
+WebnnBackendWrapper::WebnnBackendWrapper(int targetId, const cv::Mat& m)
+    : BackendWrapper(DNN_BACKEND_WEBNN, targetId)
 {
-    dimensions = getShape<uint32_t>(m);
-    if (m.type() == CV_16F)
+    size_t dataSize = m.total() * m.elemSize();
+    buffer.reset(new char[dataSize]);
+    std::memcpy(buffer.get(), m.data, dataSize);
+    dimensions = getShape<int32_t>(m);
+    descriptor.dimensions = dimensions.data();
+    descriptor.dimensionsCount = dimensions.size();
+    if (m.type() == CV_32F)
     {
-        dataSize = m.total() * m.elemSize();
-        buffer.reset(new char[dataSize]);
-        std::memcpy(buffer.get(), (float16_t*)m.data, dataSize);
-        descriptor = {ml::Operand::Float16, dimensions.data(), dimensions.size()};
-    }
-    else if (m.type() == CV_32F)
-    {
-        dataSize = m.total() * m.elemSize();
-        buffer.reset(new char[dataSize]);
-        std::memcpy(buffer.get(), (float32_t*)m.data, dataSize);
-        descriptor = {ml::Operand::Float32, dimensions.data(), dimensions.size()};
-    }
-    else if (m.type() == CV_8U)
-    {
-        dataSize = m.total() * m.elemSize();
-        buffer.reset(new char[dataSize]);
-        std::memcpy(buffer.get(), (uint8_t*)m.data, dataSize);
-        descriptor = {ml::Operand::Uint8, dimensions.data(), dimensions.size()};
+        descriptor.type = ml::OperandType::Float32;
     }
     else
         CV_Error(Error::StsNotImplemented, format("Unsupported data type %s", typeToString(m.type()).c_str()));
 }
 
-WebnnBackendWrapper::WebnnBackendWrapper(Ptr<BackendWrapper> wrapper)
+WebnnBackendWrapper::~WebnnBackendWrapper()
 {
-    Ptr<WebnnBackendWrapper> webnnWrapper = wrapper.dynamicCast<WebnnBackendWrapper>();
-    CV_Assert(!webnnWrapper.empty());
-    buffer = webnnWrapper->buffer;
-    descriptor = webnnWrapper->descriptor;
-}
-
-static Ptr<BackendWrapper> WebnnBackendWrapper::create(Ptr<BackendWrapper> wrapper)
-{
-    return Ptr<BackendWrapper>(new WebnnBackendWrapper(wrapper));
+    // nothing
 }
 
 void WebnnBackendWrapper::copyToHost()
 {
     CV_LOG_DEBUG(NULL, "WebnnBackendWrapper::copyToHost()");
+    //CV_Error(Error::StsNotImplemented, "");
 }
 
 void WebnnBackendWrapper::setHostDirty()
 {
     CV_LOG_DEBUG(NULL, "WebnnBackendWrapper::setHostDirty()");
+    //CV_Error(Error::StsNotImplemented, "");
 }
 
-void * WebnnBackendWrapper::getBuffer()
+void forwardWebnn(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
+                  Ptr<BackendNode>& node, bool isAsync)
 {
-    return buffer;
+    CV_Assert(!node.empty());
+    Ptr<WebnnBackendNode> webnnNode = node.dynamicCast<WebnnBackendNode>();
+    CV_Assert(!webnnNode.empty());
+    webnnNode->net->forward(outBlobsWrappers, isAsync);
 }
+
 
 #else
 void forwardWebnn(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
-                   Ptr<BackendNode>& operand)
+                   Ptr<BackendNode>& operand, bool isAsync)
 {
     CV_Assert(false && "WebNN is not enabled in this OpenCV build");
 }

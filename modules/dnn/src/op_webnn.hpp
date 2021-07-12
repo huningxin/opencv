@@ -19,11 +19,13 @@
 #include <webnn/webnn_proc.h>
 #include <webnn_native/WebnnNative.h>
 
+#include <unordered_map>
+
 #endif  // HAVE_WEBNN
 
 namespace cv { namespace dnn {
 
-constexpr bool haveWebNN() {
+constexpr bool haveWebnn() {
 #ifdef HAVE_WEBNN
         return true;
 #else
@@ -34,63 +36,76 @@ constexpr bool haveWebNN() {
 #ifdef HAVE_WEBNN
 
 class WebnnBackendNode;
+class WebnnBackendWrapper;
 
-
-class WebnnGraph
+class WebnnNet
 {
 public:
-    WebnnGraph();
+    WebnnNet();
+
+    void addOutput(const std::string& name);
 
     bool isInitialized();
-
     void init(Target targetId);
 
-    void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers);
+    void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers, bool isAsync);
 
-    void createGraph(Target targetId);
+    std::vector<ml::Operand> setInputs(const std::vector<cv::Mat>& inputs, const std::vector<std::string>& names);
+
+    void setUnconnectedNodes(Ptr<WebnnBackendNode>& node);
+    void addBlobs(const std::vector<cv::Ptr<BackendWrapper> >& ptrs);
+
+    void createNet(Target targetId);
+    // void setNodePtr(std::shared_ptr<ngraph::Node>* ptr);
+
+    void reset();
 
 private:
     ml::GraphBuilder builder;
-    ml::Context mContext;
-    ml::Graph mGraph;
-    ml::NamedOperands mResults;
+    ml::Context context;
+    ml::Graph graph;
+
+    std::unordered_map<std::string, cv::Ptr<WebnnBackendWrapper>> allBlobs;
+
+    bool hasNetOwner;
+    std::string device_name;
     bool isInit = false;
+
+    std::vector<std::string> requestedOutputs;
+    std::vector<cv::Ptr<WebnnBackendNode>> unconnectedNodes;
 };
 
 class WebnnBackendNode : public BackendNode
 {
 public:
-    WebnnBackendNode(const std::vector<Ptr<BackendNode> >& nodes, Ptr<Layer>& layer,
-                        std::vector<Mat*>& inputs, std::vector<Mat>& outputs,
-                        std::vector<Mat>& internals);
+    WebnnBackendNode(ml::Operand&& operand);
+    WebnnBackendNode(ml::Operand& operand);
 
+    std::string name;
     ml::Operand operand;
-    WebnnGraph graph;
+    Ptr<WebnnNet> net;
+    Ptr<dnn::Layer> cvLayer;
 };
 
 class WebnnBackendWrapper : public BackendWrapper
 {
 public:
-    WebnnBackendWrapper(const Mat& m);
-    WebnnBackendWrapper(Ptr<BackendWrapper> wrapper);
-    // ~WebnnBackendWrapper();
-
-    static Ptr<BackendWrapper> create(Ptr<BackendWrapper> wrapper);
+    WebnnBackendWrapper(int targetId, const Mat& m);
+    ~WebnnBackendWrapper();
 
     virtual void copyToHost() CV_OVERRIDE;
     virtual void setHostDirty() CV_OVERRIDE;
-    virtual void * getBuffer();
 
-private:
+    std::string name;
     std::unique_ptr<char> buffer;
+    std::vector<int32_t> dimensions;
     ml::OperandDescriptor descriptor;
-    std::vector<uint32_t> dimensions;
 };
 
 #endif  // HAVE_WebNN
 
 void forwardWebnn(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers,
-                  Ptr<BackendNode>& operand);
+                   Ptr<BackendNode>& node, bool isAsync);
 
 }}  // namespace cv::dnn
 
