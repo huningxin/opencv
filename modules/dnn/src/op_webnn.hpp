@@ -59,6 +59,8 @@ public:
     void forward(const std::vector<Ptr<BackendWrapper> >& outBlobsWrappers);
 
     void createGraph(const ml::Operand outputOperand);
+    
+    void reset();
 
 private:
     ml::GraphBuilder builder;

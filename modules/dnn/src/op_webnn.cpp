@@ -96,6 +96,15 @@ void WebnnGraph::createGraph(const ml::Operand outputOperand)
     isInit = true;
 }
 
+void WebnnGraph::reset()
+{
+    mContext = ml::Context(webnn_native::CreateContext());
+    builder = ml::CreateGraphBuilder(mContext);
+    mGraph = NULL;
+    mResults = NULL;
+    isInit = false;
+}
+
 // WebnnBackendNode
 
 WebnnBackendNode::WebnnBackendNode(const ml::Operand layerOperand)

@@ -2370,8 +2370,42 @@ struct Net::Impl : public detail::NetImplBase
 
     void initWebNNBackend(const std::vector<LayerPin>& blobsToKeep_)
     {
+        CV_TRACE_FUNCTION();
 #ifdef HAVE_WEBNN
-        // to do
+        CV_Assert_N(preferableBackend == DNN_BACKEND_WEBNN, haveWebNN());
+
+        Ptr<BackendNode> lastNode = layers[lastLayerId].backendNodes[preferableBackend];
+        CV_Assert(!lasNode.empty());
+
+        Ptr<WebnnBackendNode> lastWebnnNode = lastNode.dynamicCast<WebnnBackendNode>();
+        CV_Assert(!lastWebnnNode.empty());
+        lastWebnnNode->graph->reset();
+
+        MapIdToLayerData::iterator it = layers.begin();
+        for (; it != layers.end(); it++)
+        {
+            LayerData &ld = it->second;
+            Ptr<Layer> layer = ld.layerInstance;
+            if (!layer->supportBackend(preferableBackend))
+            {
+                continue;
+            }
+
+            ld.skip = true;
+
+            try
+            {
+                ld.backendNodes[DNN_BACKEND_WEBNN] =
+                    layer->initWebnn(ld.inputBlobsWrappers, ld.outputBlobsWrappers, 
+                                     ld.internalBlobsWrappers, ld.name, &lastWebnnNode);
+            }
+            catch (const cv::Exception& e)
+            {
+                CV_LOG_ERROR(NULL, "initWebnn failed, fallback to CPU implementation. " << e.what());
+                ld.backendNodes[DNN_BACKEND_VKCOM] = Ptr<BackendNode>();
+            }
+        }
+        return;
 #endif
     }
 
