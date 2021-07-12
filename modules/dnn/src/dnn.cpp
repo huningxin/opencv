@@ -2405,6 +2405,7 @@ struct Net::Impl : public detail::NetImplBase
                 ld.backendNodes[DNN_BACKEND_VKCOM] = Ptr<BackendNode>();
             }
         }
+        layers[lastLayerId].skip = false;
         return;
 #endif
     }
