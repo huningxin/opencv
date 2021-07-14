@@ -2452,6 +2452,10 @@ struct Net::Impl : public detail::NetImplBase
             Ptr<Layer> layer = ld.layerInstance;
             if (!fused && !layer->supportBackend(preferableBackend))
             {
+                // For test use. when not using WebNN, the test case will fail
+                // with the following code.
+                CV_Error(Error::StsNotImplemented, "Unsupported operand by WebNN");
+
                 addWebnnOutputs(ld);
                 net = Ptr<WebnnNet>();
                 layer->preferableTarget = DNN_TARGET_CPU;
