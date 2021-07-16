@@ -481,6 +481,7 @@ struct ReLU6Functor : public BaseFunctor
         return backendId == DNN_BACKEND_OPENCV ||
                backendId == DNN_BACKEND_CUDA ||
                backendId == DNN_BACKEND_HALIDE ||
+               backendId == DNN_BACKEND_WEBNN ||
                backendId == DNN_BACKEND_INFERENCE_ENGINE_NN_BUILDER_2019 || backendId == DNN_BACKEND_INFERENCE_ENGINE_NGRAPH;
     }
 
@@ -577,12 +578,29 @@ struct ReLU6Functor : public BaseFunctor
     }
 #endif  // HAVE_DNN_NGRAPH
 
+
+
 #ifdef HAVE_WEBNN
+    ml::Operand BuildConstant(const ml::GraphBuilder& builder,
+                              const std::vector<int32_t>& dimensions,
+                              const void* value,
+                              size_t size,
+                              ml::OperandType type) {
+        ml::OperandDescriptor desc;
+        desc.type = ml::OperandType::Float32;
+        desc.dimensions = dimensions.data();
+        desc.dimensionsCount = (uint32_t)dimensions.size();
+        return builder.Constant(&desc, value, size);
+    }
+
     ml::Operand initWebnnAPI(const ml::GraphBuilder& builder, const ml::Operand& input)
     {
-        CV_Error(Error::StsNotImplemented, "");
-        ml::Operand operand;
-        return operand;
+        ml::ClampOptions clampOptions;
+        clampOptions.minValue = 
+            BuildConstant(builder, {}, &minValue, 1 * sizeof(float), ml::OperandType::Float32);
+        clampOptions.maxValue = 
+            BuildConstant(builder, {}, &maxValue, 1 * sizeof(float), ml::OperandType::Float32);
+        return builder.Clamp(input, &clampOptions);
     }
 #endif
 
