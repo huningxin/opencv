@@ -587,7 +587,7 @@ struct ReLU6Functor : public BaseFunctor
                               size_t size,
                               ml::OperandType type) {
         ml::OperandDescriptor desc;
-        desc.type = ml::OperandType::Float32;
+        desc.type = type;
         desc.dimensions = dimensions.data();
         desc.dimensionsCount = (uint32_t)dimensions.size();
         return builder.Constant(&desc, value, size);
